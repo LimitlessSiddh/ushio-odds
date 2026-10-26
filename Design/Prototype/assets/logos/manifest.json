@@ -1,0 +1,401 @@
+{
+  "teams": {
+    "NBA": {
+      "ATL": {
+        "file": "nba-atl.png",
+        "name": "Atlanta Hawks",
+        "url": "https://a.espncdn.com/i/teamlogos/nba/500/atl.png"
+      },
+      "BOS": {
+        "file": "nba-bos.png",
+        "name": "Boston Celtics",
+        "url": "https://a.espncdn.com/i/teamlogos/nba/500/bos.png"
+      },
+      "BKN": {
+        "file": "nba-bkn.png",
+        "name": "Brooklyn Nets",
+        "url": "https://a.espncdn.com/i/teamlogos/nba/500/bkn.png"
+      },
+      "CHA": {
+        "file": "nba-cha.png",
+        "name": "Charlotte Hornets",
+        "url": "https://a.espncdn.com/i/teamlogos/nba/500/cha.png"
+      },
+      "CHI": {
+        "file": "nba-chi.png",
+        "name": "Chicago Bulls",
+        "url": "https://a.espncdn.com/i/teamlogos/nba/500/chi.png"
+      },
+      "CLE": {
+        "file": "nba-cle.png",
+        "name": "Cleveland Cavaliers",
+        "url": "https://a.espncdn.com/i/teamlogos/nba/500/cle.png"
+      },
+      "DAL": {
+        "file": "nba-dal.png",
+        "name": "Dallas Mavericks",
+        "url": "https://a.espncdn.com/i/teamlogos/nba/500/dal.png"
+      },
+      "DEN": {
+        "file": "nba-den.png",
+        "name": "Denver Nuggets",
+        "url": "https://a.espncdn.com/i/teamlogos/nba/500/den.png"
+      },
+      "DET": {
+        "file": "nba-det.png",
+        "name": "Detroit Pistons",
+        "url": "https://a.espncdn.com/i/teamlogos/nba/500/det.png"
+      },
+      "GS": {
+        "file": "nba-gs.png",
+        "name": "Golden State Warriors",
+        "url": "https://a.espncdn.com/i/teamlogos/nba/500/gs.png"
+      },
+      "HOU": {
+        "file": "nba-hou.png",
+        "name": "Houston Rockets",
+        "url": "https://a.espncdn.com/i/teamlogos/nba/500/hou.png"
+      },
+      "IND": {
+        "file": "nba-ind.png",
+        "name": "Indiana Pacers",
+        "url": "https://a.espncdn.com/i/teamlogos/nba/500/ind.png"
+      },
+      "LAC": {
+        "file": "nba-lac.png",
+        "name": "LA Clippers",
+        "url": "https://a.espncdn.com/i/teamlogos/nba/500/lac.png"
+      },
+      "LAL": {
+        "file": "nba-lal.png",
+        "name": "Los Angeles Lakers",
+        "url": "https://a.espncdn.com/i/teamlogos/nba/500/lal.png"
+      },
+      "MEM": {
+        "file": "nba-mem.png",
+        "name": "Memphis Grizzlies",
+        "url": "https://a.espncdn.com/i/teamlogos/nba/500/mem.png"
+      },
+      "MIA": {
+        "file": "nba-mia.png",
+        "name": "Miami Heat",
+        "url": "https://a.espncdn.com/i/teamlogos/nba/500/mia.png"
+      },
+      "MIL": {
+        "file": "nba-mil.png",
+        "name": "Milwaukee Bucks",
+        "url": "https://a.espncdn.com/i/teamlogos/nba/500/mil.png"
+      },
+      "MIN": {
+        "file": "nba-min.png",
+        "name": "Minnesota Timberwolves",
+        "url": "https://a.espncdn.com/i/teamlogos/nba/500/min.png"
+      },
+      "NO": {
+        "file": "nba-no.png",
+        "name": "New Orleans Pelicans",
+        "url": "https://a.espncdn.com/i/teamlogos/nba/500/no.png"
+      },
+      "NY": {
+        "file": "nba-ny.png",
+        "name": "New York Knicks",
+        "url": "https://a.espncdn.com/i/teamlogos/nba/500/ny.png"
+      },
+      "OKC": {
+        "file": "nba-okc.png",
+        "name": "Oklahoma City Thunder",
+        "url": "https://a.espncdn.com/i/teamlogos/nba/500/okc.png"
+      },
+      "ORL": {
+        "file": "nba-orl.png",
+        "name": "Orlando Magic",
+        "url": "https://a.espncdn.com/i/teamlogos/nba/500/orl.png"
+      },
+      "PHI": {
+        "file": "nba-phi.png",
+        "name": "Philadelphia 76ers",
+        "url": "https://a.espncdn.com/i/teamlogos/nba/500/phi.png"
+      },
+      "PHX": {
+        "file": "nba-phx.png",
+        "name": "Phoenix Suns",
+        "url": "https://a.espncdn.com/i/teamlogos/nba/500/phx.png"
+      },
+      "POR": {
+        "file": "nba-por.png",
+        "name": "Portland Trail Blazers",
+        "url": "https://a.espncdn.com/i/teamlogos/nba/500/por.png"
+      },
+      "SAC": {
+        "file": "nba-sac.png",
+        "name": "Sacramento Kings",
+        "url": "https://a.espncdn.com/i/teamlogos/nba/500/sac.png"
+      },
+      "SA": {
+        "file": "nba-sa.png",
+        "name": "San Antonio Spurs",
+        "url": "https://a.espncdn.com/i/teamlogos/nba/500/sa.png"
+      },
+      "TOR": {
+        "file": "nba-tor.png",
+        "name": "Toronto Raptors",
+        "url": "https://a.espncdn.com/i/teamlogos/nba/500/tor.png"
+      },
+      "UTAH": {
+        "file": "nba-utah.png",
+        "name": "Utah Jazz",
+        "url": "https://a.espncdn.com/i/teamlogos/nba/500/utah.png"
+      },
+      "WSH": {
+        "file": "nba-wsh.png",
+        "name": "Washington Wizards",
+        "url": "https://a.espncdn.com/i/teamlogos/nba/500/wsh.png"
+      }
+    },
+    "NHL": {
+      "ANA": {
+        "file": "nhl-ana.png",
+        "name": "Anaheim Ducks",
+        "url": "https://a.espncdn.com/i/teamlogos/nhl/500/ana.png"
+      },
+      "BOS": {
+        "file": "nhl-bos.png",
+        "name": "Boston Bruins",
+        "url": "https://a.espncdn.com/i/teamlogos/nhl/500/bos.png"
+      },
+      "BUF": {
+        "file": "nhl-buf.png",
+        "name": "Buffalo Sabres",
+        "url": "https://a.espncdn.com/i/teamlogos/nhl/500/buf.png"
+      },
+      "CGY": {
+        "file": "nhl-cgy.png",
+        "name": "Calgary Flames",
+        "url": "https://a.espncdn.com/i/teamlogos/nhl/500/cgy.png"
+      },
+      "CAR": {
+        "file": "nhl-car.png",
+        "name": "Carolina Hurricanes",
+        "url": "https://a.espncdn.com/i/teamlogos/nhl/500/car.png"
+      },
+      "CHI": {
+        "file": "nhl-chi.png",
+        "name": "Chicago Blackhawks",
+        "url": "https://a.espncdn.com/i/teamlogos/nhl/500/chi.png"
+      },
+      "COL": {
+        "file": "nhl-col.png",
+        "name": "Colorado Avalanche",
+        "url": "https://a.espncdn.com/i/teamlogos/nhl/500/col.png"
+      },
+      "CBJ": {
+        "file": "nhl-cbj.png",
+        "name": "Columbus Blue Jackets",
+        "url": "https://a.espncdn.com/i/teamlogos/nhl/500/cbj.png"
+      },
+      "DAL": {
+        "file": "nhl-dal.png",
+        "name": "Dallas Stars",
+        "url": "https://a.espncdn.com/i/teamlogos/nhl/500/dal.png"
+      },
+      "DET": {
+        "file": "nhl-det.png",
+        "name": "Detroit Red Wings",
+        "url": "https://a.espncdn.com/i/teamlogos/nhl/500/det.png"
+      },
+      "EDM": {
+        "file": "nhl-edm.png",
+        "name": "Edmonton Oilers",
+        "url": "https://a.espncdn.com/i/teamlogos/nhl/500/edm.png"
+      },
+      "FLA": {
+        "file": "nhl-fla.png",
+        "name": "Florida Panthers",
+        "url": "https://a.espncdn.com/i/teamlogos/nhl/500/fla.png"
+      },
+      "LA": {
+        "file": "nhl-la.png",
+        "name": "Los Angeles Kings",
+        "url": "https://a.espncdn.com/i/teamlogos/nhl/500/la.png"
+      },
+      "MIN": {
+        "file": "nhl-min.png",
+        "name": "Minnesota Wild",
+        "url": "https://a.espncdn.com/i/teamlogos/nhl/500/min.png"
+      },
+      "MTL": {
+        "file": "nhl-mtl.png",
+        "name": "Montreal Canadiens",
+        "url": "https://a.espncdn.com/i/teamlogos/nhl/500/mtl.png"
+      },
+      "NSH": {
+        "file": "nhl-nsh.png",
+        "name": "Nashville Predators",
+        "url": "https://a.espncdn.com/i/teamlogos/nhl/500/nsh.png"
+      },
+      "NJ": {
+        "file": "nhl-nj.png",
+        "name": "New Jersey Devils",
+        "url": "https://a.espncdn.com/i/teamlogos/nhl/500/nj.png"
+      },
+      "NYI": {
+        "file": "nhl-nyi.png",
+        "name": "New York Islanders",
+        "url": "https://a.espncdn.com/i/teamlogos/nhl/500/nyi.png"
+      },
+      "NYR": {
+        "file": "nhl-nyr.png",
+        "name": "New York Rangers",
+        "url": "https://a.espncdn.com/i/teamlogos/nhl/500/nyr.png"
+      },
+      "OTT": {
+        "file": "nhl-ott.png",
+        "name": "Ottawa Senators",
+        "url": "https://a.espncdn.com/i/teamlogos/nhl/500/ott.png"
+      },
+      "PHI": {
+        "file": "nhl-phi.png",
+        "name": "Philadelphia Flyers",
+        "url": "https://a.espncdn.com/i/teamlogos/nhl/500/phi.png"
+      },
+      "PIT": {
+        "file": "nhl-pit.png",
+        "name": "Pittsburgh Penguins",
+        "url": "https://a.espncdn.com/i/teamlogos/nhl/500/pit.png"
+      },
+      "SJ": {
+        "file": "nhl-sj.png",
+        "name": "San Jose Sharks",
+        "url": "https://a.espncdn.com/i/teamlogos/nhl/500/sj.png"
+      },
+      "SEA": {
+        "file": "nhl-sea.png",
+        "name": "Seattle Kraken",
+        "url": "https://a.espncdn.com/i/teamlogos/nhl/500/sea.png"
+      },
+      "STL": {
+        "file": "nhl-stl.png",
+        "name": "St. Louis Blues",
+        "url": "https://a.espncdn.com/i/teamlogos/nhl/500/stl.png"
+      },
+      "TB": {
+        "file": "nhl-tb.png",
+        "name": "Tampa Bay Lightning",
+        "url": "https://a.espncdn.com/i/teamlogos/nhl/500/tb.png"
+      },
+      "TOR": {
+        "file": "nhl-tor.png",
+        "name": "Toronto Maple Leafs",
+        "url": "https://a.espncdn.com/i/teamlogos/nhl/500/tor.png"
+      },
+      "UTAH": {
+        "file": "nhl-utah.png",
+        "name": "Utah Mammoth",
+        "url": "https://a.espncdn.com/i/teamlogos/nhl/500/utah.png"
+      },
+      "VAN": {
+        "file": "nhl-van.png",
+        "name": "Vancouver Canucks",
+        "url": "https://a.espncdn.com/i/teamlogos/nhl/500/van.png"
+      },
+      "VGK": {
+        "file": "nhl-vgk.png",
+        "name": "Vegas Golden Knights",
+        "url": "https://a.espncdn.com/i/teamlogos/nhl/500/vgk.png"
+      },
+      "WSH": {
+        "file": "nhl-wsh.png",
+        "name": "Washington Capitals",
+        "url": "https://a.espncdn.com/i/teamlogos/nhl/500/wsh.png"
+      },
+      "WPG": {
+        "file": "nhl-wpg.png",
+        "name": "Winnipeg Jets",
+        "url": "https://a.espncdn.com/i/teamlogos/nhl/500/wpg.png"
+      }
+    }
+  },
+  "leagues": {
+    "NBA": {
+      "file": "nba.png",
+      "url": "https://a.espncdn.com/i/teamlogos/leagues/500/nba.png"
+    },
+    "NHL": {
+      "file": "nhl.png",
+      "url": "https://a.espncdn.com/i/teamlogos/leagues/500/nhl.png"
+    }
+  },
+  "books": {
+    "Bet365": {
+      "file": "book-bet365-display.svg",
+      "url": "https://gamingcontrolboard.pa.gov/sites/default/files/2025-07/Bet365%20%281%29.png",
+      "source": "https://gamingcontrolboard.pa.gov/online-sports-wagering-licensed-operators",
+      "originalFile": "book-bet365.png",
+      "displayPreparation": "SVG viewBox removes blank canvas only; original logo pixels and aspect ratio retained."
+    },
+    "FanDuel": {
+      "file": "book-fanduel-display.svg",
+      "url": "https://gamingcontrolboard.pa.gov/sites/default/files/2025-07/Logos%20%2880%20x%2080%20px%29%20%282%29.png",
+      "source": "https://gamingcontrolboard.pa.gov/online-sports-wagering-licensed-operators",
+      "originalFile": "book-fanduel.png",
+      "displayPreparation": "SVG viewBox removes blank canvas only; original logo pixels and aspect ratio retained."
+    },
+    "DraftKings": {
+      "file": "book-draftkings-display.svg",
+      "url": "https://gamingcontrolboard.pa.gov/sites/default/files/2025-07/Draft%20Kings.png",
+      "source": "https://gamingcontrolboard.pa.gov/online-sports-wagering-licensed-operators",
+      "originalFile": "book-draftkings.png",
+      "displayPreparation": "SVG viewBox removes blank canvas only; original logo pixels and aspect ratio retained."
+    },
+    "BetMGM": {
+      "file": "book-betmgm-display.svg",
+      "url": "https://gamingcontrolboard.pa.gov/sites/default/files/2025-07/BetMGM.png",
+      "source": "https://gamingcontrolboard.pa.gov/online-sports-wagering-licensed-operators",
+      "originalFile": "book-betmgm.png",
+      "displayPreparation": "SVG viewBox removes blank canvas only; original logo pixels and aspect ratio retained."
+    },
+    "Pinnacle": {
+      "file": "book-pinnacle.ico",
+      "url": "https://www.pinnacle.com/img/icons/favicon.ico",
+      "source": "https://www.pinnacle.com/"
+    },
+    "Caesars": {
+      "file": "book-caesars-display.svg",
+      "url": "https://gamingcontrolboard.pa.gov/sites/default/files/2025-12/thumbnail_image001.png",
+      "source": "https://gamingcontrolboard.pa.gov/online-sports-wagering-licensed-operators",
+      "originalFile": "book-caesars.png",
+      "displayPreparation": "SVG viewBox removes blank canvas only; original logo pixels and aspect ratio retained."
+    },
+    "BetRivers": {
+      "file": "book-betrivers-display.svg",
+      "url": "https://gamingcontrolboard.pa.gov/sites/default/files/2025-07/Logos%20%2880%20x%2080%20px%29%20%285%29.png",
+      "source": "https://gamingcontrolboard.pa.gov/online-sports-wagering-licensed-operators",
+      "originalFile": "book-betrivers.png",
+      "displayPreparation": "SVG viewBox removes blank canvas only; original logo pixels and aspect ratio retained."
+    },
+    "Fanatics": {
+      "file": "book-fanatics-display.svg",
+      "url": "https://gamingcontrolboard.pa.gov/sites/default/files/2025-07/Logos%20%2880%20x%2080%20px%29%20%283%29.png",
+      "source": "https://gamingcontrolboard.pa.gov/online-sports-wagering-licensed-operators",
+      "originalFile": "book-fanatics.png",
+      "displayPreparation": "SVG viewBox removes blank canvas only; original logo pixels and aspect ratio retained."
+    },
+    "PointsBet": {
+      "file": "book-pointsbet-display.svg",
+      "url": "https://pointsbet.com.au/_static/favicon/apple-touch-icon.png",
+      "source": "https://pointsbet.com.au/",
+      "originalFile": "book-pointsbet.png",
+      "displayPreparation": "SVG viewBox removes blank canvas only; original logo pixels and aspect ratio retained."
+    },
+    "Betway": {
+      "file": "book-betway-display.svg",
+      "url": "https://betway.com/assets/images/icons/icon-180.png",
+      "source": "https://betway.com/",
+      "originalFile": "book-betway.png",
+      "displayPreparation": "SVG viewBox removes blank canvas only; original logo pixels and aspect ratio retained."
+    }
+  },
+  "sources": [
+    "https://gamingcontrolboard.pa.gov/online-sports-wagering-licensed-operators"
+  ]
+}

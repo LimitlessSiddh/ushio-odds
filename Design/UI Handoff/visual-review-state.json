@@ -1,0 +1,48 @@
+{
+  "purpose": "Synthetic fixture state needed to match the approved performance screenshots; never import as real betting history.",
+  "seedLedger": "Use the prototype perfSeed sample records.",
+  "additionalPerformanceEntries": [
+    {
+      "id": "visual-review-demo",
+      "date": "2026-10-26",
+      "event": "Demo tracking example",
+      "market": "Manual pair totals",
+      "bookA": "Bet365",
+      "bookB": "BetMGM",
+      "stake": 100,
+      "returned": 102,
+      "fee": 0.25,
+      "status": "settled",
+      "source": "Manual prototype",
+      "note": "Manually entered pair totals. Not synced or verified against sportsbook accounts."
+    }
+  ],
+  "watchlist": [
+    "NBA-0"
+  ],
+  "expectedPerformance": {
+    "seedOnly": {
+      "netProfitCAD": 57,
+      "settledStakeCAD": 3720,
+      "settledPairs": 12,
+      "voidedPairs": 1,
+      "openPairs": 2,
+      "openStakeCAD": 550
+    },
+    "withAdditionalEntry": {
+      "netProfitCAD": 58.75,
+      "settledStakeCAD": 3820,
+      "roiDisplayedPercent": 1.54,
+      "settledPairs": 13,
+      "profitablePairs": 12,
+      "losingPairs": 1,
+      "voidedPairs": 1,
+      "openStakeCAD": 550
+    }
+  },
+  "notes": [
+    "Local storage in a fresh browser does not contain the QA entry, saved calculation or starred game.",
+    "A saved calculator scenario is separate from performance records. The 1 saved footer is incidental browser state, not a required seed record.",
+    "Use a fixed clock/date in visual comparisons; prototype schedule is synthetic and anchored to 26 October 2026."
+  ]
+}

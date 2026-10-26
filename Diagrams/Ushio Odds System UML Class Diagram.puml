@@ -1,0 +1,108 @@
+@startuml
+title Ushio Odds Proposed Class Model
+skinparam classAttributeIconSize 0
+skinparam linetype ortho
+interface SourceAdapter <<interface>> #DBEAFE {
+  + providerId: str
+  + jurisdiction: str
+  + mode: DataMode
+  --
+  + fetchSnapshot(): RawBatch
+  + revalidate(ids): RawBatch
+}
+class IngestionWorker <<service>> #CCFBF1 {
+  - adapter: SourceAdapter
+  - repository: QuoteRepository
+  - health: FeedHealth
+  --
+  + ingest(batch): None
+  + recover(cursor): None
+}
+class MarketNormalizer <<service>> #CCFBF1 {
+  - mappingVersion: str
+  - settlementRules: RuleSet
+  --
+  + normalize(raw): Quote | Reject
+  + matchMarket(raw): MarketKey
+}
+class ArbitrageEngine <<control>> #EDE9FE {
+  - calculator: HedgeCalculator
+  - maxAgeMs: int
+  - maxSkewMs: int
+  --
+  + evaluate(quotes): Decision
+  + invalidate(id, reason): None
+}
+class LiveProviderAdapter <<adapter>> #DBEAFE {
+  - endpoint: URL
+  - secretRef: str
+  - cursor: str | None
+  --
+  + fetchSnapshot(): RawBatch
+  + revalidate(ids): RawBatch
+}
+class QuoteRepository <<persistence>> #FFEDD5 {
+  - database: PostgreSQL
+  - providerPartition: str
+  --
+  + saveBatch(batch): None
+  + getEligible(key): list[Quote]
+}
+class CanonicalQuote <<entity>> #DCFCE7 {
+  + quoteId: UUID
+  + marketKey: MarketKey
+  + odds: Decimal
+  + sourceAt: UTC
+  --
+  + isFresh(now): bool
+  + isActive(): bool
+}
+class HedgeCalculator <<control>> #EDE9FE {
+  - precision: DecimalContext
+  - rounding: CurrencyPolicy
+  --
+  + size(budget, odds): StakePlan
+  + profitByOutcome(): list[Money]
+}
+class ReplayAdapter <<adapter>> #DBEAFE {
+  - fixturePath: Path
+  - clock: ReplayClock
+  --
+  + fetchSnapshot(): RawBatch
+  + advanceTo(time): RawBatch
+}
+class ResearchAPI <<boundary>> #CCFBF1 {
+  - calculator: HedgeCalculator
+  - repository: QuoteRepository
+  --
+  + getOpportunities(): list
+  + calculateHedge(input): StakePlan
+}
+class Opportunity <<entity>> #DCFCE7 {
+  + id: UUID
+  + state: OpportunityState
+  + minProfit: Decimal
+  + expiresAt: UTC
+  --
+  + revalidate(evidence): None
+  + invalidate(reason): None
+}
+class OpportunityLeg <<value object>> #DCFCE7 {
+  + quoteId: UUID
+  + stakeMinorUnits: int
+  + grossPayout: Decimal
+  --
+  + outcomeProfit(total): Money
+  + traceQuote(): UUID
+}
+SourceAdapter <|.. LiveProviderAdapter
+SourceAdapter <|.. ReplayAdapter
+IngestionWorker ..> SourceAdapter : uses
+IngestionWorker ..> MarketNormalizer : uses
+IngestionWorker ..> QuoteRepository : persists
+MarketNormalizer ..> CanonicalQuote : creates
+QuoteRepository --> "0..*" CanonicalQuote : stores
+ArbitrageEngine ..> HedgeCalculator : uses
+ResearchAPI ..> QuoteRepository : queries
+Opportunity "1" *-- "2..3" OpportunityLeg : owns
+@enduml

@@ -1,0 +1,45 @@
+{
+  "status": "Approved visual reference 2026-10-26",
+  "notes": [
+    "Extracted from the actual prototype. Read final CSS overrides for component dimensions; sidebar/dock base variables are not the final floating-panel size.",
+    "The approved palette and final prototype component roles take precedence over rejected accent explorations."
+  ],
+  "dark": {
+    "canvas": "#111111",
+    "surface": "#191919",
+    "raised": "#242424",
+    "line": "#363636",
+    "control": "#777777",
+    "text": "#FAFAFA",
+    "muted": "#A3A3A3",
+    "accent": "#5EEAD4",
+    "on-accent": "#111111",
+    "accent-soft": "#162E29",
+    "positive": "#86EFAC",
+    "warning": "#FCD34D",
+    "warning-bg": "#302A17",
+    "negative": "#FCA5A5",
+    "shadow": "0 20px 70px #0007",
+    "sidebar": "176px",
+    "dock": "336px"
+  },
+  "light": {
+    "canvas": "#FAFAFA",
+    "surface": "#FFFFFF",
+    "raised": "#F5F5F5",
+    "line": "#E5E5E5",
+    "control": "#737373",
+    "text": "#171717",
+    "muted": "#525252",
+    "accent": "#0F766E",
+    "on-accent": "#FFFFFF",
+    "accent-soft": "#EDF7F5",
+    "positive": "#15803D",
+    "warning": "#713F12",
+    "warning-bg": "#FEF3C7",
+    "negative": "#B91C1C",
+    "shadow": "0 20px 70px #0002",
+    "sidebar": "176px",
+    "dock": "336px"
+  }
+}

@@ -1,0 +1,166 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="2230" height="1630" viewBox="0 0 2230 1630"><rect width="2230" height="1630" fill="#F8FAFC"/>
+<text x="70" y="88" font-family="Arial,sans-serif" font-size="38" font-weight="700" fill="#172033">USHIO ODDS</text>
+<text x="70" y="131" font-family="Arial,sans-serif" font-size="21" font-weight="400" fill="#475569">UML class model  |  Proposed design  |  26 October 2026</text>
+<rect x="70" y="164" width="18" height="18" fill="#DBEAFE" stroke="#2563EB"/>
+<text x="100" y="178" font-family="Arial,sans-serif" font-size="18" font-weight="400" fill="#172033">Data source interfaces</text>
+<rect x="490" y="164" width="18" height="18" fill="#CCFBF1" stroke="#0F766E"/>
+<text x="520" y="178" font-family="Arial,sans-serif" font-size="18" font-weight="400" fill="#172033">Application services</text>
+<rect x="910" y="164" width="18" height="18" fill="#EDE9FE" stroke="#7C3AED"/>
+<text x="940" y="178" font-family="Arial,sans-serif" font-size="18" font-weight="400" fill="#172033">Calculation and control</text>
+<rect x="1330" y="164" width="18" height="18" fill="#FFEDD5" stroke="#C2410C"/>
+<text x="1360" y="178" font-family="Arial,sans-serif" font-size="18" font-weight="400" fill="#172033">Persistence</text>
+<rect x="1750" y="164" width="18" height="18" fill="#DCFCE7" stroke="#15803D"/>
+<text x="1780" y="178" font-family="Arial,sans-serif" font-size="18" font-weight="400" fill="#172033">Domain entities</text>
+<rect x="70" y="230" width="365" height="290" rx="9" fill="white" stroke="#2563EB" stroke-width="2"/><rect x="71" y="231" width="363" height="72" fill="#DBEAFE"/>
+<text x="86" y="256" font-family="Arial,sans-serif" font-size="16" font-weight="400" fill="#2563EB">«interface»</text>
+<text x="86" y="287" font-family="Arial,sans-serif" font-size="23" font-weight="700" fill="#172033">SourceAdapter</text>
+<polyline points="70,304 435,304" fill="none" stroke="#2563EB" stroke-width="2"/>
+<polyline points="70,417 435,417" fill="none" stroke="#2563EB" stroke-width="2"/>
+<text x="86" y="332" font-family="Arial,sans-serif" font-size="17" font-weight="400" fill="#172033">+ providerId: str</text>
+<text x="86" y="356" font-family="Arial,sans-serif" font-size="17" font-weight="400" fill="#172033">+ jurisdiction: str</text>
+<text x="86" y="380" font-family="Arial,sans-serif" font-size="17" font-weight="400" fill="#172033">+ mode: DataMode</text>
+<text x="86" y="449" font-family="Arial,sans-serif" font-size="16" font-weight="400" fill="#172033">+ fetchSnapshot(): RawBatch</text>
+<text x="86" y="478" font-family="Arial,sans-serif" font-size="16" font-weight="400" fill="#172033">+ revalidate(ids): RawBatch</text>
+<rect x="620" y="230" width="365" height="290" rx="9" fill="white" stroke="#0F766E" stroke-width="2"/><rect x="621" y="231" width="363" height="72" fill="#CCFBF1"/>
+<text x="636" y="256" font-family="Arial,sans-serif" font-size="16" font-weight="400" fill="#0F766E">«service»</text>
+<text x="636" y="287" font-family="Arial,sans-serif" font-size="23" font-weight="700" fill="#172033">IngestionWorker</text>
+<polyline points="620,304 985,304" fill="none" stroke="#0F766E" stroke-width="2"/>
+<polyline points="620,417 985,417" fill="none" stroke="#0F766E" stroke-width="2"/>
+<text x="636" y="332" font-family="Arial,sans-serif" font-size="17" font-weight="400" fill="#172033">- adapter: SourceAdapter</text>
+<text x="636" y="356" font-family="Arial,sans-serif" font-size="17" font-weight="400" fill="#172033">- repository: QuoteRepository</text>
+<text x="636" y="380" font-family="Arial,sans-serif" font-size="17" font-weight="400" fill="#172033">- health: FeedHealth</text>
+<text x="636" y="449" font-family="Arial,sans-serif" font-size="16" font-weight="400" fill="#172033">+ ingest(batch): None</text>
+<text x="636" y="478" font-family="Arial,sans-serif" font-size="16" font-weight="400" fill="#172033">+ recover(cursor): None</text>
+<rect x="1170" y="230" width="365" height="290" rx="9" fill="white" stroke="#0F766E" stroke-width="2"/><rect x="1171" y="231" width="363" height="72" fill="#CCFBF1"/>
+<text x="1186" y="256" font-family="Arial,sans-serif" font-size="16" font-weight="400" fill="#0F766E">«service»</text>
+<text x="1186" y="287" font-family="Arial,sans-serif" font-size="23" font-weight="700" fill="#172033">MarketNormalizer</text>
+<polyline points="1170,304 1535,304" fill="none" stroke="#0F766E" stroke-width="2"/>
+<polyline points="1170,417 1535,417" fill="none" stroke="#0F766E" stroke-width="2"/>
+<text x="1186" y="332" font-family="Arial,sans-serif" font-size="17" font-weight="400" fill="#172033">- mappingVersion: str</text>
+<text x="1186" y="356" font-family="Arial,sans-serif" font-size="17" font-weight="400" fill="#172033">- settlementRules: RuleSet</text>
+<text x="1186" y="449" font-family="Arial,sans-serif" font-size="16" font-weight="400" fill="#172033">+ normalize(raw): Quote | Reject</text>
+<text x="1186" y="478" font-family="Arial,sans-serif" font-size="16" font-weight="400" fill="#172033">+ matchMarket(raw): MarketKey</text>
+<rect x="1720" y="230" width="365" height="290" rx="9" fill="white" stroke="#7C3AED" stroke-width="2"/><rect x="1721" y="231" width="363" height="72" fill="#EDE9FE"/>
+<text x="1736" y="256" font-family="Arial,sans-serif" font-size="16" font-weight="400" fill="#7C3AED">«control»</text>
+<text x="1736" y="287" font-family="Arial,sans-serif" font-size="23" font-weight="700" fill="#172033">ArbitrageEngine</text>
+<polyline points="1720,304 2085,304" fill="none" stroke="#7C3AED" stroke-width="2"/>
+<polyline points="1720,417 2085,417" fill="none" stroke="#7C3AED" stroke-width="2"/>
+<text x="1736" y="332" font-family="Arial,sans-serif" font-size="17" font-weight="400" fill="#172033">- calculator: HedgeCalculator</text>
+<text x="1736" y="356" font-family="Arial,sans-serif" font-size="17" font-weight="400" fill="#172033">- maxAgeMs: int</text>
+<text x="1736" y="380" font-family="Arial,sans-serif" font-size="17" font-weight="400" fill="#172033">- maxSkewMs: int</text>
+<text x="1736" y="449" font-family="Arial,sans-serif" font-size="16" font-weight="400" fill="#172033">+ evaluate(quotes): Decision</text>
+<text x="1736" y="478" font-family="Arial,sans-serif" font-size="16" font-weight="400" fill="#172033">+ invalidate(id, reason): None</text>
+<rect x="70" y="700" width="365" height="290" rx="9" fill="white" stroke="#2563EB" stroke-width="2"/><rect x="71" y="701" width="363" height="72" fill="#DBEAFE"/>
+<text x="86" y="726" font-family="Arial,sans-serif" font-size="16" font-weight="400" fill="#2563EB">«adapter»</text>
+<text x="86" y="757" font-family="Arial,sans-serif" font-size="23" font-weight="700" fill="#172033">LiveProviderAdapter</text>
+<polyline points="70,774 435,774" fill="none" stroke="#2563EB" stroke-width="2"/>
+<polyline points="70,887 435,887" fill="none" stroke="#2563EB" stroke-width="2"/>
+<text x="86" y="802" font-family="Arial,sans-serif" font-size="17" font-weight="400" fill="#172033">- endpoint: URL</text>
+<text x="86" y="826" font-family="Arial,sans-serif" font-size="17" font-weight="400" fill="#172033">- secretRef: str</text>
+<text x="86" y="850" font-family="Arial,sans-serif" font-size="17" font-weight="400" fill="#172033">- cursor: str | None</text>
+<text x="86" y="919" font-family="Arial,sans-serif" font-size="16" font-weight="400" fill="#172033">+ fetchSnapshot(): RawBatch</text>
+<text x="86" y="948" font-family="Arial,sans-serif" font-size="16" font-weight="400" fill="#172033">+ revalidate(ids): RawBatch</text>
+<rect x="620" y="700" width="365" height="290" rx="9" fill="white" stroke="#C2410C" stroke-width="2"/><rect x="621" y="701" width="363" height="72" fill="#FFEDD5"/>
+<text x="636" y="726" font-family="Arial,sans-serif" font-size="16" font-weight="400" fill="#C2410C">«persistence»</text>
+<text x="636" y="757" font-family="Arial,sans-serif" font-size="23" font-weight="700" fill="#172033">QuoteRepository</text>
+<polyline points="620,774 985,774" fill="none" stroke="#C2410C" stroke-width="2"/>
+<polyline points="620,887 985,887" fill="none" stroke="#C2410C" stroke-width="2"/>
+<text x="636" y="802" font-family="Arial,sans-serif" font-size="17" font-weight="400" fill="#172033">- database: PostgreSQL</text>
+<text x="636" y="826" font-family="Arial,sans-serif" font-size="17" font-weight="400" fill="#172033">- providerPartition: str</text>
+<text x="636" y="919" font-family="Arial,sans-serif" font-size="16" font-weight="400" fill="#172033">+ saveBatch(batch): None</text>
+<text x="636" y="948" font-family="Arial,sans-serif" font-size="16" font-weight="400" fill="#172033">+ getEligible(key): list[Quote]</text>
+<rect x="1170" y="700" width="365" height="290" rx="9" fill="white" stroke="#15803D" stroke-width="2"/><rect x="1171" y="701" width="363" height="72" fill="#DCFCE7"/>
+<text x="1186" y="726" font-family="Arial,sans-serif" font-size="16" font-weight="400" fill="#15803D">«entity»</text>
+<text x="1186" y="757" font-family="Arial,sans-serif" font-size="23" font-weight="700" fill="#172033">CanonicalQuote</text>
+<polyline points="1170,774 1535,774" fill="none" stroke="#15803D" stroke-width="2"/>
+<polyline points="1170,887 1535,887" fill="none" stroke="#15803D" stroke-width="2"/>
+<text x="1186" y="802" font-family="Arial,sans-serif" font-size="17" font-weight="400" fill="#172033">+ quoteId: UUID</text>
+<text x="1186" y="826" font-family="Arial,sans-serif" font-size="17" font-weight="400" fill="#172033">+ marketKey: MarketKey</text>
+<text x="1186" y="850" font-family="Arial,sans-serif" font-size="17" font-weight="400" fill="#172033">+ odds: Decimal</text>
+<text x="1186" y="874" font-family="Arial,sans-serif" font-size="17" font-weight="400" fill="#172033">+ sourceAt: UTC</text>
+<text x="1186" y="919" font-family="Arial,sans-serif" font-size="16" font-weight="400" fill="#172033">+ isFresh(now): bool</text>
+<text x="1186" y="948" font-family="Arial,sans-serif" font-size="16" font-weight="400" fill="#172033">+ isActive(): bool</text>
+<rect x="1720" y="700" width="365" height="290" rx="9" fill="white" stroke="#7C3AED" stroke-width="2"/><rect x="1721" y="701" width="363" height="72" fill="#EDE9FE"/>
+<text x="1736" y="726" font-family="Arial,sans-serif" font-size="16" font-weight="400" fill="#7C3AED">«control»</text>
+<text x="1736" y="757" font-family="Arial,sans-serif" font-size="23" font-weight="700" fill="#172033">HedgeCalculator</text>
+<polyline points="1720,774 2085,774" fill="none" stroke="#7C3AED" stroke-width="2"/>
+<polyline points="1720,887 2085,887" fill="none" stroke="#7C3AED" stroke-width="2"/>
+<text x="1736" y="802" font-family="Arial,sans-serif" font-size="17" font-weight="400" fill="#172033">- precision: DecimalContext</text>
+<text x="1736" y="826" font-family="Arial,sans-serif" font-size="17" font-weight="400" fill="#172033">- rounding: CurrencyPolicy</text>
+<text x="1736" y="919" font-family="Arial,sans-serif" font-size="16" font-weight="400" fill="#172033">+ size(budget, odds): StakePlan</text>
+<text x="1736" y="948" font-family="Arial,sans-serif" font-size="16" font-weight="400" fill="#172033">+ profitByOutcome(): list[Money]</text>
+<rect x="70" y="1170" width="365" height="290" rx="9" fill="white" stroke="#2563EB" stroke-width="2"/><rect x="71" y="1171" width="363" height="72" fill="#DBEAFE"/>
+<text x="86" y="1196" font-family="Arial,sans-serif" font-size="16" font-weight="400" fill="#2563EB">«adapter»</text>
+<text x="86" y="1227" font-family="Arial,sans-serif" font-size="23" font-weight="700" fill="#172033">ReplayAdapter</text>
+<polyline points="70,1244 435,1244" fill="none" stroke="#2563EB" stroke-width="2"/>
+<polyline points="70,1357 435,1357" fill="none" stroke="#2563EB" stroke-width="2"/>
+<text x="86" y="1272" font-family="Arial,sans-serif" font-size="17" font-weight="400" fill="#172033">- fixturePath: Path</text>
+<text x="86" y="1296" font-family="Arial,sans-serif" font-size="17" font-weight="400" fill="#172033">- clock: ReplayClock</text>
+<text x="86" y="1389" font-family="Arial,sans-serif" font-size="16" font-weight="400" fill="#172033">+ fetchSnapshot(): RawBatch</text>
+<text x="86" y="1418" font-family="Arial,sans-serif" font-size="16" font-weight="400" fill="#172033">+ advanceTo(time): RawBatch</text>
+<rect x="620" y="1170" width="365" height="290" rx="9" fill="white" stroke="#0F766E" stroke-width="2"/><rect x="621" y="1171" width="363" height="72" fill="#CCFBF1"/>
+<text x="636" y="1196" font-family="Arial,sans-serif" font-size="16" font-weight="400" fill="#0F766E">«boundary»</text>
+<text x="636" y="1227" font-family="Arial,sans-serif" font-size="23" font-weight="700" fill="#172033">ResearchAPI</text>
+<polyline points="620,1244 985,1244" fill="none" stroke="#0F766E" stroke-width="2"/>
+<polyline points="620,1357 985,1357" fill="none" stroke="#0F766E" stroke-width="2"/>
+<text x="636" y="1272" font-family="Arial,sans-serif" font-size="17" font-weight="400" fill="#172033">- calculator: HedgeCalculator</text>
+<text x="636" y="1296" font-family="Arial,sans-serif" font-size="17" font-weight="400" fill="#172033">- repository: QuoteRepository</text>
+<text x="636" y="1389" font-family="Arial,sans-serif" font-size="16" font-weight="400" fill="#172033">+ getOpportunities(): list</text>
+<text x="636" y="1418" font-family="Arial,sans-serif" font-size="16" font-weight="400" fill="#172033">+ calculateHedge(input): StakePlan</text>
+<rect x="1170" y="1170" width="365" height="290" rx="9" fill="white" stroke="#15803D" stroke-width="2"/><rect x="1171" y="1171" width="363" height="72" fill="#DCFCE7"/>
+<text x="1186" y="1196" font-family="Arial,sans-serif" font-size="16" font-weight="400" fill="#15803D">«entity»</text>
+<text x="1186" y="1227" font-family="Arial,sans-serif" font-size="23" font-weight="700" fill="#172033">Opportunity</text>
+<polyline points="1170,1244 1535,1244" fill="none" stroke="#15803D" stroke-width="2"/>
+<polyline points="1170,1357 1535,1357" fill="none" stroke="#15803D" stroke-width="2"/>
+<text x="1186" y="1272" font-family="Arial,sans-serif" font-size="17" font-weight="400" fill="#172033">+ id: UUID</text>
+<text x="1186" y="1296" font-family="Arial,sans-serif" font-size="17" font-weight="400" fill="#172033">+ state: OpportunityState</text>
+<text x="1186" y="1320" font-family="Arial,sans-serif" font-size="17" font-weight="400" fill="#172033">+ minProfit: Decimal</text>
+<text x="1186" y="1344" font-family="Arial,sans-serif" font-size="17" font-weight="400" fill="#172033">+ expiresAt: UTC</text>
+<text x="1186" y="1389" font-family="Arial,sans-serif" font-size="16" font-weight="400" fill="#172033">+ revalidate(evidence): None</text>
+<text x="1186" y="1418" font-family="Arial,sans-serif" font-size="16" font-weight="400" fill="#172033">+ invalidate(reason): None</text>
+<rect x="1720" y="1170" width="365" height="290" rx="9" fill="white" stroke="#15803D" stroke-width="2"/><rect x="1721" y="1171" width="363" height="72" fill="#DCFCE7"/>
+<text x="1736" y="1196" font-family="Arial,sans-serif" font-size="16" font-weight="400" fill="#15803D">«value object»</text>
+<text x="1736" y="1227" font-family="Arial,sans-serif" font-size="23" font-weight="700" fill="#172033">OpportunityLeg</text>
+<polyline points="1720,1244 2085,1244" fill="none" stroke="#15803D" stroke-width="2"/>
+<polyline points="1720,1357 2085,1357" fill="none" stroke="#15803D" stroke-width="2"/>
+<text x="1736" y="1272" font-family="Arial,sans-serif" font-size="17" font-weight="400" fill="#172033">+ quoteId: UUID</text>
+<text x="1736" y="1296" font-family="Arial,sans-serif" font-size="17" font-weight="400" fill="#172033">+ stakeMinorUnits: int</text>
+<text x="1736" y="1320" font-family="Arial,sans-serif" font-size="17" font-weight="400" fill="#172033">+ grossPayout: Decimal</text>
+<text x="1736" y="1389" font-family="Arial,sans-serif" font-size="16" font-weight="400" fill="#172033">+ outcomeProfit(total): Money</text>
+<text x="1736" y="1418" font-family="Arial,sans-serif" font-size="16" font-weight="400" fill="#172033">+ traceQuote(): UUID</text>
+<polyline points="620,375 435,375" fill="none" stroke="#64748B" stroke-width="2" stroke-dasharray="8 6"/>
+<polyline points="445,369 435,375 445,381" fill="none" stroke="#64748B" stroke-width="2"/>
+<text x="486" y="361" font-family="Arial,sans-serif" font-size="16" font-weight="400" fill="#475569">uses</text>
+<polyline points="985,375 1170,375" fill="none" stroke="#64748B" stroke-width="2" stroke-dasharray="8 6"/>
+<polyline points="1160,369 1170,375 1160,381" fill="none" stroke="#64748B" stroke-width="2"/>
+<text x="1042" y="361" font-family="Arial,sans-serif" font-size="16" font-weight="400" fill="#475569">uses</text>
+<polyline points="1352,520 1352,700" fill="none" stroke="#64748B" stroke-width="2" stroke-dasharray="8 6"/>
+<polyline points="1346,690 1352,700 1358,690" fill="none" stroke="#64748B" stroke-width="2"/>
+<text x="1370" y="608" font-family="Arial,sans-serif" font-size="16" font-weight="400" fill="#475569">creates</text>
+<polyline points="802,520 802,700" fill="none" stroke="#64748B" stroke-width="2" stroke-dasharray="8 6"/>
+<polyline points="796,690 802,700 808,690" fill="none" stroke="#64748B" stroke-width="2"/>
+<text x="819" y="608" font-family="Arial,sans-serif" font-size="16" font-weight="400" fill="#475569">persists</text>
+<polyline points="985,845 1170,845" fill="none" stroke="#64748B" stroke-width="2"/>
+<polyline points="1160,839 1170,845 1160,851" fill="none" stroke="#64748B" stroke-width="2"/>
+<text x="998" y="826" font-family="Arial,sans-serif" font-size="16" font-weight="400" fill="#475569">stores  0..*</text>
+<polyline points="1902,520 1902,700" fill="none" stroke="#64748B" stroke-width="2" stroke-dasharray="8 6"/>
+<polyline points="1896,690 1902,700 1908,690" fill="none" stroke="#64748B" stroke-width="2"/>
+<text x="1918" y="608" font-family="Arial,sans-serif" font-size="16" font-weight="400" fill="#475569">uses</text>
+<polyline points="252,700 252,520" fill="none" stroke="#64748B" stroke-width="2" stroke-dasharray="8 6"/>
+<polyline points="246,530 252,520 258,530" fill="none" stroke="#64748B" stroke-width="2"/>
+<polyline points="246,530 258,530" fill="none" stroke="#64748B" stroke-width="2"/>
+<text x="270" y="608" font-family="Arial,sans-serif" font-size="16" font-weight="400" fill="#475569">implements</text>
+<polyline points="70,1315 24,1315 24,375 70,375" fill="none" stroke="#64748B" stroke-width="2" stroke-dasharray="8 6"/>
+<polyline points="60,369 70,375 60,381" fill="none" stroke="#64748B" stroke-width="2"/>
+<polyline points="60,369 60,381" fill="none" stroke="#64748B" stroke-width="2"/>
+<text x="34" y="1091" font-family="Arial,sans-serif" font-size="16" font-weight="400" fill="#475569">implements</text>
+<polyline points="802,1170 802,990" fill="none" stroke="#64748B" stroke-width="2" stroke-dasharray="8 6"/>
+<polyline points="796,1000 802,990 808,1000" fill="none" stroke="#64748B" stroke-width="2"/>
+<text x="820" y="1076" font-family="Arial,sans-serif" font-size="16" font-weight="400" fill="#475569">queries</text>
+<polyline points="1535,1315 1720,1315" fill="none" stroke="#64748B" stroke-width="2"/>
+<polyline points="1710,1309 1720,1315 1710,1321" fill="none" stroke="#64748B" stroke-width="2"/>
+<text x="1551" y="1296" font-family="Arial,sans-serif" font-size="16" font-weight="400" fill="#475569">1 owns 2..3</text>
+<polygon points="1535,1315 1548,1307 1561,1315 1548,1323" fill="#475569"/>
+<text x="70" y="1548" font-family="Arial,sans-serif" font-size="18" font-weight="400" fill="#172033">Notation  + public   - private   dashed arrow dependency   hollow triangle realization   filled diamond composition</text>
+<text x="70" y="1588" font-family="Arial,sans-serif" font-size="18" font-weight="400" fill="#64748B">Selected relationships shown for clarity. No automatic wager execution is included in this model.</text>
+</svg>

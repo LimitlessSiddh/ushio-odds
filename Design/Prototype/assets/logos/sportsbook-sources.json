@@ -1,0 +1,65 @@
+{
+  "Bet365": {
+    "homepage": "https://www.bet365.com/",
+    "error": "Command '['curl', '-fsSL', '--max-time', '18', '-A', 'Mozilla/5.0', 'https://www.bet365.com/']' returned non-zero exit status 56."
+  },
+  "FanDuel": {
+    "homepage": "https://www.fanduel.com/",
+    "icons": [
+      "https://iwa-assets.fanduel.com/fd-iwa-assets/graphics/fd-dfs-favicon.ico"
+    ]
+  },
+  "DraftKings": {
+    "homepage": "https://www.draftkings.com/",
+    "icons": [
+      "https://d2tjpz01y5bfgl.cloudfront.net/favicon.ico"
+    ]
+  },
+  "BetMGM": {
+    "homepage": "https://www.betmgm.com/",
+    "error": "Command '['curl', '-fsSL', '--max-time', '18', '-A', 'Mozilla/5.0', 'https://www.betmgm.com/']' returned non-zero exit status 56."
+  },
+  "Pinnacle": {
+    "homepage": "https://www.pinnacle.com/",
+    "icons": [
+      "https://www.pinnacle.com/img/icons/favicon.ico"
+    ]
+  },
+  "Caesars": {
+    "homepage": "https://www.caesars.com/sportsbook-and-casino",
+    "icons": []
+  },
+  "BetRivers": {
+    "homepage": "https://www.betrivers.com/",
+    "icons": [
+      "https://www.betrivers.com/assets/favicon/apple-touch-icon.png",
+      "https://www.betrivers.com/assets/favicon/favicon-32x32.png",
+      "https://www.betrivers.com/assets/favicon/favicon-16x16.png",
+      "https://www.betrivers.com/assets/favicon/safari-pinned-tab.svg",
+      "https://www.betrivers.com/assets/favicon/favicon.ico"
+    ]
+  },
+  "Fanatics": {
+    "homepage": "https://sportsbook.fanatics.com/",
+    "error": "Command '['curl', '-fsSL', '--max-time', '18', '-A', 'Mozilla/5.0', 'https://sportsbook.fanatics.com/']' returned non-zero exit status 56."
+  },
+  "PointsBet": {
+    "homepage": "https://pointsbet.com.au/",
+    "icons": [
+      "https://pointsbet.com.au/_static/favicon/apple-touch-icon.png",
+      "https://pointsbet.com.au/_static/favicon/favicon-32x32.png",
+      "https://pointsbet.com.au/_static/favicon/favicon-16x16.png",
+      "https://pointsbet.com.au/_static/favicon/safari-pinned-tab.svg",
+      "https://pointsbet.com.au/_static/favicon/favicon.ico"
+    ]
+  },
+  "Betway": {
+    "homepage": "https://betway.com/",
+    "icons": [
+      "https://betway.com/assets/images/icons/icon-180.png",
+      "https://betway.com/assets/images/icons/favicon-16x16.png",
+      "https://betway.com/assets/images/icons/favicon-32x32.png",
+      "https://betway.com/assets/images/icons/favicon.ico"
+    ]
+  }
+}

@@ -1,0 +1,191 @@
+[
+  [
+    "SourceAdapter",
+    "interface",
+    "blue",
+    70,
+    230,
+    [
+      "+ providerId: str",
+      "+ jurisdiction: str",
+      "+ mode: DataMode"
+    ],
+    [
+      "+ fetchSnapshot(): RawBatch",
+      "+ revalidate(ids): RawBatch"
+    ]
+  ],
+  [
+    "IngestionWorker",
+    "service",
+    "teal",
+    620,
+    230,
+    [
+      "- adapter: SourceAdapter",
+      "- repository: QuoteRepository",
+      "- health: FeedHealth"
+    ],
+    [
+      "+ ingest(batch): None",
+      "+ recover(cursor): None"
+    ]
+  ],
+  [
+    "MarketNormalizer",
+    "service",
+    "teal",
+    1170,
+    230,
+    [
+      "- mappingVersion: str",
+      "- settlementRules: RuleSet"
+    ],
+    [
+      "+ normalize(raw): Quote | Reject",
+      "+ matchMarket(raw): MarketKey"
+    ]
+  ],
+  [
+    "ArbitrageEngine",
+    "control",
+    "purple",
+    1720,
+    230,
+    [
+      "- calculator: HedgeCalculator",
+      "- maxAgeMs: int",
+      "- maxSkewMs: int"
+    ],
+    [
+      "+ evaluate(quotes): Decision",
+      "+ invalidate(id, reason): None"
+    ]
+  ],
+  [
+    "LiveProviderAdapter",
+    "adapter",
+    "blue",
+    70,
+    700,
+    [
+      "- endpoint: URL",
+      "- secretRef: str",
+      "- cursor: str | None"
+    ],
+    [
+      "+ fetchSnapshot(): RawBatch",
+      "+ revalidate(ids): RawBatch"
+    ]
+  ],
+  [
+    "QuoteRepository",
+    "persistence",
+    "orange",
+    620,
+    700,
+    [
+      "- database: PostgreSQL",
+      "- providerPartition: str"
+    ],
+    [
+      "+ saveBatch(batch): None",
+      "+ getEligible(key): list[Quote]"
+    ]
+  ],
+  [
+    "CanonicalQuote",
+    "entity",
+    "green",
+    1170,
+    700,
+    [
+      "+ quoteId: UUID",
+      "+ marketKey: MarketKey",
+      "+ odds: Decimal",
+      "+ sourceAt: UTC"
+    ],
+    [
+      "+ isFresh(now): bool",
+      "+ isActive(): bool"
+    ]
+  ],
+  [
+    "HedgeCalculator",
+    "control",
+    "purple",
+    1720,
+    700,
+    [
+      "- precision: DecimalContext",
+      "- rounding: CurrencyPolicy"
+    ],
+    [
+      "+ size(budget, odds): StakePlan",
+      "+ profitByOutcome(): list[Money]"
+    ]
+  ],
+  [
+    "ReplayAdapter",
+    "adapter",
+    "blue",
+    70,
+    1170,
+    [
+      "- fixturePath: Path",
+      "- clock: ReplayClock"
+    ],
+    [
+      "+ fetchSnapshot(): RawBatch",
+      "+ advanceTo(time): RawBatch"
+    ]
+  ],
+  [
+    "ResearchAPI",
+    "boundary",
+    "teal",
+    620,
+    1170,
+    [
+      "- calculator: HedgeCalculator",
+      "- repository: QuoteRepository"
+    ],
+    [
+      "+ getOpportunities(): list",
+      "+ calculateHedge(input): StakePlan"
+    ]
+  ],
+  [
+    "Opportunity",
+    "entity",
+    "green",
+    1170,
+    1170,
+    [
+      "+ id: UUID",
+      "+ state: OpportunityState",
+      "+ minProfit: Decimal",
+      "+ expiresAt: UTC"
+    ],
+    [
+      "+ revalidate(evidence): None",
+      "+ invalidate(reason): None"
+    ]
+  ],
+  [
+    "OpportunityLeg",
+    "value object",
+    "green",
+    1720,
+    1170,
+    [
+      "+ quoteId: UUID",
+      "+ stakeMinorUnits: int",
+      "+ grossPayout: Decimal"
+    ],
+    [
+      "+ outcomeProfit(total): Money",
+      "+ traceQuote(): UUID"
+    ]
+  ]
+]
