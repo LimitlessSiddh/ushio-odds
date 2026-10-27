@@ -5,11 +5,13 @@ from typing import Literal
 
 from fastapi import FastAPI, HTTPException, Query
 from fastapi.middleware.cors import CORSMiddleware
+import httpx
 from pydantic import BaseModel, Field
 
 from .domain import CalculationError, calculate_hedge
 from .fixtures import fixture_board
-from .persistence import PairLedgerRecord, SavedCalculation, create_schema, new_id, session
+from .opportunities import detect_two_way_opportunities
+from .persistence import PairLedgerRecord, SavedCalculation, WatchlistEntry, create_schema, new_id, session
 from .provider import OddsApiAdapter
 
 app = FastAPI(title="Ushio Odds API", version="0.1.0")
@@ -42,6 +44,15 @@ class LedgerRecordRequest(BaseModel):
     fees: str = "0"
 
 
+class ProviderRefreshRequest(BaseModel):
+    sport: str = Field(min_length=1, max_length=100)
+    market: str = Field(min_length=1, max_length=100)
+
+
+class WatchlistRequest(BaseModel):
+    event_id: str = Field(min_length=1, max_length=180)
+
+
 @app.get("/v1/health")
 def health() -> dict:
     provider = OddsApiAdapter().status()
@@ -53,10 +64,46 @@ def odds(sport: str = Query("icehockey_nhl"), market: str = Query("h2h")) -> dic
     return fixture_board(sport, market)
 
 
+@app.get("/v1/opportunities")
+def opportunities(sport: str = Query("all"), market: str = Query("all")) -> dict:
+    board = fixture_board(sport, market)
+    return {"mode": board["mode"], "provider": board["provider"], "opportunities": detect_two_way_opportunities(board["games"])}
+
+
 @app.get("/v1/capabilities")
 def capabilities() -> dict:
     provider = OddsApiAdapter().status()
     return fixture_board("all", "all")["capabilities"] | {"mode": provider.mode, "region": provider.region, "credit_floor": provider.credit_floor, "message": provider.message}
+
+
+@app.post("/v1/provider/refresh")
+def refresh_provider(request: ProviderRefreshRequest) -> dict:
+    """Run one explicit selected-market refresh; fixture mode never polls providers."""
+    try:
+        return OddsApiAdapter().fetch_selected_market(request.sport, request.market)
+    except RuntimeError as error:
+        raise HTTPException(status_code=409, detail=str(error)) from error
+    except httpx.HTTPError as error:
+        raise HTTPException(status_code=502, detail="Provider request failed; fixture mode remains available.") from error
+
+
+@app.get("/v1/watchlist")
+def list_watchlist() -> list[str]:
+    with session() as database:
+        return [row.event_id for row in database.query(WatchlistEntry).order_by(WatchlistEntry.created_at.desc()).all()]
+
+
+@app.post("/v1/watchlist")
+def toggle_watchlist(request: WatchlistRequest) -> dict:
+    with session() as database:
+        existing = database.get(WatchlistEntry, request.event_id)
+        if existing is not None:
+            database.delete(existing)
+            database.commit()
+            return {"event_id": request.event_id, "watched": False}
+        database.add(WatchlistEntry(event_id=request.event_id))
+        database.commit()
+        return {"event_id": request.event_id, "watched": True}
 
 
 @app.post("/v1/calculators/hedge")

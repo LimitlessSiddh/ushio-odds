@@ -17,6 +17,7 @@ jobs:
       - uses: actions/setup-node@v4
         with: { node-version: '24', cache: 'npm', cache-dependency-path: 'apps/web/package-lock.json' }
       - run: pip install -r services/api/requirements.txt
+      - run: cd services/api && USHIO_DATABASE_URL=sqlite:////tmp/ushio-ci.db PYTHONPATH=. alembic -c alembic.ini upgrade head
       - run: PYTHONPATH=services/api pytest services/api/tests -q
       - run: npm --prefix apps/web ci
       - run: npm --prefix apps/web run check

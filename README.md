@@ -5,7 +5,7 @@ Local, single-user odds research software. It ships with deterministic fixtures 
 ## Run locally
 
 1. Copy `.env.example` to `.env` and optionally add a permitted The Odds API key.
-2. Run `docker compose up --build`.
+2. Run `docker compose up --build`; Alembic applies the local database schema before the API starts.
 3. Open `http://localhost:5173`.
 
 Without a key, the API deliberately stays in fixture mode. With a key, the provider adapter is still quota guarded and only refreshes an explicitly selected sport/market.

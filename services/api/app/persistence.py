@@ -34,6 +34,12 @@ class PairLedgerRecord(Base):
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))
 
 
+class WatchlistEntry(Base):
+    __tablename__ = "watchlist_entries"
+    event_id: Mapped[str] = mapped_column(String(180), primary_key=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))
+
+
 DATABASE_URL = getenv("USHIO_DATABASE_URL", "sqlite:///./ushio-local.db")
 engine = create_engine(DATABASE_URL, pool_pre_ping=True)
 SessionLocal = sessionmaker(engine, expire_on_commit=False)

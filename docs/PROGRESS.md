@@ -6,6 +6,8 @@
 - FastAPI contract and Decimal hedge calculation engine with total-budget/fixed-leg modes.
 - Deterministic fixture/replay board, provider status boundary, and controlled The Odds API adapter contract.
 - PostgreSQL-ready server persistence models for saved calculations and pair-ledger records; SQLite is the local no-Docker fallback.
+- Server-backed watchlist, saved-calculation, and ledger contracts, with Alembic revisions through `20261026_02`.
+- Explicit selected-market provider refresh path; player-prop normalization includes player description and exact line.
 - Docker compose local environment, pinned web/API dependencies, API tests, and local browser integration evidence.
 
 ## Current source state
