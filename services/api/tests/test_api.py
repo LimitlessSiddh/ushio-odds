@@ -54,6 +54,16 @@ def test_manual_ledger_contract_persists_a_record() -> None:
         assert any(row["id"] == response.json()["id"] for row in records.json())
 
 
+def test_saved_calculation_survives_a_new_app_client() -> None:
+    payload = {"title": "Fixture hedge", "payload": {"odds": [-110, 115], "result": {"minimum_profit": "1.00"}}}
+    with TestClient(app) as first:
+        created = first.post("/v1/saved-calculations", json=payload)
+        assert created.status_code == 201
+    with TestClient(app) as restarted:
+        rows = restarted.get("/v1/saved-calculations")
+        assert any(row["id"] == created.json()["id"] and row["payload"] == payload["payload"] for row in rows.json())
+
+
 def test_ledger_correction_is_immutable_and_changes_the_projection() -> None:
     with TestClient(app) as runtime:
         created = runtime.post("/v1/ledger", json={"occurred_on": "2026-10-27", "event_name": "Fixture correction", "books": "Book A / Book B", "status": "open", "total_stake": "100.00", "returned": "0", "fees": "0"})
