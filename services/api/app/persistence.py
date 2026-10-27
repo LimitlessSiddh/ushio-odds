@@ -34,6 +34,18 @@ class PairLedgerRecord(Base):
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))
 
 
+class PairLedgerCorrection(Base):
+    __tablename__ = "pair_ledger_corrections"
+    id: Mapped[str] = mapped_column(String(36), primary_key=True)
+    record_id: Mapped[str] = mapped_column(ForeignKey("pair_ledger_records.id"), nullable=False)
+    reason: Mapped[str] = mapped_column(String(300), nullable=False)
+    status: Mapped[str] = mapped_column(String(16), nullable=False)
+    total_stake_minor: Mapped[int] = mapped_column(Integer, nullable=False)
+    returned_minor: Mapped[int] = mapped_column(Integer, nullable=False)
+    fees_minor: Mapped[int] = mapped_column(Integer, nullable=False)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))
+
+
 class WatchlistEntry(Base):
     __tablename__ = "watchlist_entries"
     event_id: Mapped[str] = mapped_column(String(180), primary_key=True)

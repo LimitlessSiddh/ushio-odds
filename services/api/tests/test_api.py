@@ -47,6 +47,18 @@ def test_manual_ledger_contract_persists_a_record() -> None:
         assert any(row["id"] == response.json()["id"] for row in records.json())
 
 
+def test_ledger_correction_is_immutable_and_changes_the_projection() -> None:
+    with TestClient(app) as runtime:
+        created = runtime.post("/v1/ledger", json={"occurred_on": "2026-10-27", "event_name": "Fixture correction", "books": "Book A / Book B", "status": "open", "total_stake": "100.00", "returned": "0", "fees": "0"})
+        corrected = runtime.post(f"/v1/ledger/{created.json()['id']}/corrections", json={"reason": "Result settled", "status": "settled", "total_stake": "100.00", "returned": "108.50", "fees": "0.50"})
+        assert corrected.status_code == 201
+        record = next(row for row in runtime.get("/v1/ledger").json() if row["id"] == created.json()["id"])
+        assert record["status"] == "settled"
+        assert record["returned"] == "108.50"
+        assert record["fees"] == "0.50"
+        assert record["correction_count"] == 1
+
+
 def test_watchlist_toggle_persists_and_removes() -> None:
     with TestClient(app) as runtime:
         first = runtime.post("/v1/watchlist", json={"event_id": "fixture-event"})

@@ -12,7 +12,7 @@ from pydantic import BaseModel, Field
 from .domain import CalculationError, calculate_hedge
 from .fixtures import fixture_board
 from .opportunities import detect_two_way_opportunities
-from .persistence import Book, CanonicalEvent, Market, Outcome, PairLedgerRecord, Quote, QuoteVersion, SavedCalculation, WatchlistEntry, create_schema, new_id, session
+from .persistence import Book, CanonicalEvent, Market, Outcome, PairLedgerCorrection, PairLedgerRecord, Quote, QuoteVersion, SavedCalculation, WatchlistEntry, create_schema, new_id, session
 from .provider import OddsApiAdapter
 from .quote_lifecycle import expire_current_quotes, ingest_market_observations, is_active
 
@@ -40,6 +40,14 @@ class LedgerRecordRequest(BaseModel):
     occurred_on: str = Field(pattern=r"^\d{4}-\d{2}-\d{2}$")
     event_name: str = Field(min_length=1, max_length=180)
     books: str = Field(min_length=3, max_length=240)
+    status: Literal["settled", "open", "void"]
+    total_stake: str
+    returned: str
+    fees: str = "0"
+
+
+class LedgerCorrectionRequest(BaseModel):
+    reason: str = Field(min_length=3, max_length=300)
     status: Literal["settled", "open", "void"]
     total_stake: str
     returned: str
@@ -175,24 +183,51 @@ def save_calculation(request: SavedCalculationRequest) -> dict:
 def list_ledger() -> list[dict]:
     with session() as database:
         rows = database.query(PairLedgerRecord).order_by(PairLedgerRecord.occurred_on.desc()).all()
-        return [{"id": row.id, "occurred_on": row.occurred_on, "event_name": row.event_name, "books": row.books, "status": row.status, "total_stake": f"{row.total_stake_minor / 100:.2f}", "returned": f"{row.returned_minor / 100:.2f}", "fees": f"{row.fees_minor / 100:.2f}", "source": row.source} for row in rows]
+        return [ledger_projection(database, row) for row in rows]
 
 
-@app.post("/v1/ledger", status_code=201)
-def create_ledger_record(request: LedgerRecordRequest) -> dict:
+def validate_ledger_money(status: str, total_stake: str, returned: str, fees: str) -> tuple[int, int, int]:
     try:
-        stake, returned, fees = cents(request.total_stake), cents(request.returned), cents(request.fees)
+        stake, returned_minor, fees_minor = cents(total_stake), cents(returned), cents(fees)
     except Exception as error:
         raise HTTPException(status_code=422, detail="Ledger money values must be non-negative decimal strings.") from error
     if stake == 0:
         raise HTTPException(status_code=422, detail="Total stake must be greater than zero.")
-    if request.status == "open" and (returned != 0 or fees != 0):
+    if status == "open" and (returned_minor != 0 or fees_minor != 0):
         raise HTTPException(status_code=422, detail="Open records must have zero returned amount and fees.")
-    if request.status == "void" and fees != 0:
+    if status == "void" and fees_minor != 0:
         raise HTTPException(status_code=422, detail="Voided records must have zero fees.")
+    return stake, returned_minor, fees_minor
+
+
+def ledger_projection(database, row: PairLedgerRecord) -> dict:
+    correction = database.query(PairLedgerCorrection).filter_by(record_id=row.id).order_by(PairLedgerCorrection.created_at.desc()).first()
+    status = correction.status if correction else row.status
+    stake = correction.total_stake_minor if correction else row.total_stake_minor
+    returned = correction.returned_minor if correction else row.returned_minor
+    fees = correction.fees_minor if correction else row.fees_minor
+    return {"id": row.id, "occurred_on": row.occurred_on, "event_name": row.event_name, "books": row.books, "status": status, "total_stake": f"{stake / 100:.2f}", "returned": f"{returned / 100:.2f}", "fees": f"{fees / 100:.2f}", "source": row.source, "correction_count": database.query(PairLedgerCorrection).filter_by(record_id=row.id).count()}
+
+
+@app.post("/v1/ledger", status_code=201)
+def create_ledger_record(request: LedgerRecordRequest) -> dict:
+    stake, returned, fees = validate_ledger_money(request.status, request.total_stake, request.returned, request.fees)
     row = PairLedgerRecord(id=new_id(), occurred_on=request.occurred_on, event_name=request.event_name, books=request.books, status=request.status, total_stake_minor=stake, returned_minor=returned, fees_minor=fees)
     with session() as database:
         database.add(row)
         database.commit()
         database.refresh(row)
     return {"id": row.id}
+
+
+@app.post("/v1/ledger/{record_id}/corrections", status_code=201)
+def correct_ledger_record(record_id: str, request: LedgerCorrectionRequest) -> dict:
+    stake, returned, fees = validate_ledger_money(request.status, request.total_stake, request.returned, request.fees)
+    with session() as database:
+        if database.get(PairLedgerRecord, record_id) is None:
+            raise HTTPException(status_code=404, detail="Ledger record was not found.")
+        correction = PairLedgerCorrection(id=new_id(), record_id=record_id, reason=request.reason, status=request.status, total_stake_minor=stake, returned_minor=returned, fees_minor=fees)
+        database.add(correction)
+        database.commit()
+        database.refresh(correction)
+    return {"id": correction.id, "record_id": record_id}

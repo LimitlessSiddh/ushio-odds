@@ -8,7 +8,7 @@
 | Odds comparison | Local API-backed paired fixture grid; opportunities trace selected quote-version IDs and Decimal inputs | Fixture has NHL/NBA moneylines only; no live provider observation persistence |
 | Quote lifecycle | Alembic revision `20261027_03`; deterministic lifecycle tests for duplicate/future/stale/out-of-order/suspended/mismatched inputs | Provider refresh remains deliberately non-persistent pending permitted capability scan |
 | Watchlist / saved scenarios | Server-backed endpoints; UI loads/saves through local API; browser reload proof for a player-prop watchlist item | Saved-scenario restart assertion remains to add |
-| Performance ledger | Separate UI plus `/v1/ledger` persistence contract | Corrections and per-leg audit trail remain incomplete |
+| Performance ledger | Separate UI plus `/v1/ledger` persistence contract and append-only correction API with correction counts | Per-leg provenance and correction UI remain incomplete |
 | Quebec boundary | Explicit labels and documentation | Provider entitlement/eligibility unverified |
 | UI fidelity | approved palette/density, dark/light mode, compact calculator, responsive grid | Formal screenshot-diff suite still pending |
 | CI and reproducibility | Docker compose, Alembic revisions, pinned dependencies, GitHub workflow | Hosted run requires push/remote access |

@@ -10,6 +10,7 @@
 - Explicit selected-market provider refresh path; player-prop normalization includes player description and exact line.
 - Docker compose local environment, pinned web/API dependencies, API tests, and local browser integration evidence.
 - Durable fixture quote-lifecycle foundation: provider/feed/book/event/market/outcome/quote/version records, exact market identity, source and receipt timestamps, stale expiry, suspended/missing states, and selected quote-version IDs on fixture opportunities.
+- Manual-ledger correction endpoint with append-only correction rows and an effective projection; original pair entries are never overwritten.
 
 ## Current source state
 
