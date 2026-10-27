@@ -30,9 +30,9 @@ def detect_two_way_opportunities(games: list[dict[str, Any]], budget: Decimal = 
                 if not result["is_theoretical_arb"]:
                     continue
                 if best is None or Decimal(result["minimum_profit"]) > Decimal(best[0]["minimum_profit"]):
-                    best = (result, prices)
+                    best = (result, prices, first.get("quote_version_ids", []), second.get("quote_version_ids", []))
                     best_books = [first["book"], second["book"]]
         if best is not None:
-            result, prices = best
-            opportunities.append({"event_id": game["id"], "event": f"{game['away']} / {game['home']}", "market": game["market"], "outcomes": game["outcomes"], "books": best_books, "odds": prices, "minimum_profit": result["minimum_profit"], "roi_percent": result["roi_percent"], "mode": "indicative"})
+            result, prices, first_versions, second_versions = best
+            opportunities.append({"event_id": game["id"], "event": f"{game['away']} / {game['home']}", "market": game["market"], "period": game.get("period"), "line": game.get("line"), "outcomes": game["outcomes"], "books": best_books, "odds": prices, "selected_quote_version_ids": [first_versions[0], second_versions[1]] if len(first_versions) == 2 and len(second_versions) == 2 else [], "calculation_inputs": {"odds": prices, "budget": str(budget)}, "minimum_profit": result["minimum_profit"], "roi_percent": result["roi_percent"], "mode": "indicative"})
     return sorted(opportunities, key=lambda row: Decimal(row["roi_percent"]), reverse=True)

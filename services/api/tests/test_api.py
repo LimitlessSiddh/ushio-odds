@@ -3,40 +3,39 @@ from fastapi.testclient import TestClient
 from app.main import app
 from app.provider import normalise_odds_payload
 
-client = TestClient(app)
-
-
 def test_fixture_odds_and_calculator_contracts() -> None:
-    board = client.get("/v1/odds?sport=icehockey_nhl&market=h2h")
-    assert board.status_code == 200
-    assert board.json()["mode"] == "fixture"
-    assert board.json()["games"]
+    with TestClient(app) as client:
+        board = client.get("/v1/odds?sport=icehockey_nhl&market=h2h")
+        assert board.status_code == 200
+        assert board.json()["mode"] == "fixture"
+        assert board.json()["games"]
 
-    response = client.post("/v1/calculators/hedge", json={"odds": [-110, 115], "amount": "250", "mode": "budget"})
-    assert response.status_code == 200
-    assert response.json()["is_theoretical_arb"] is True
+        response = client.post("/v1/calculators/hedge", json={"odds": [-110, 115], "amount": "250", "mode": "budget"})
+        assert response.status_code == 200
+        assert response.json()["is_theoretical_arb"] is True
 
-    prop_board = client.get("/v1/odds?sport=basketball_nba&market=player_points")
-    assert prop_board.status_code == 200
-    assert prop_board.json()["games"][0]["outcomes"][0].endswith("points")
-    assert prop_board.json()["capabilities"]["books"][-1] == "Rainbet"
-    assert len(prop_board.json()["games"][0]["quotes"]) == 11
-    assert next(quote for quote in prop_board.json()["games"][0]["quotes"] if quote["book"] == "ToonieBet")["region_status"] == "excluded"
+        prop_board = client.get("/v1/odds?sport=basketball_nba&market=player_points")
+        assert prop_board.status_code == 200
+        assert prop_board.json()["games"][0]["outcomes"][0].endswith("points")
+        assert prop_board.json()["capabilities"]["books"][-1] == "Rainbet"
+        assert len(prop_board.json()["games"][0]["quotes"]) == 11
+        assert next(quote for quote in prop_board.json()["games"][0]["quotes"] if quote["book"] == "ToonieBet")["region_status"] == "excluded"
 
-    opportunities = client.get("/v1/opportunities?sport=icehockey_nhl&market=h2h")
-    assert opportunities.status_code == 200
-    assert opportunities.json()["opportunities"][0]["books"][0] != opportunities.json()["opportunities"][0]["books"][1]
-    assert "ToonieBet" not in opportunities.json()["opportunities"][0]["books"]
-    assert float(opportunities.json()["opportunities"][0]["minimum_profit"]) > 0
-
-    prop_board = client.get("/v1/odds?sport=basketball_nba&market=player_points")
-    assert prop_board.status_code == 200
-    assert prop_board.json()["games"][0]["outcomes"][0].endswith("points")
+        opportunities = client.get("/v1/opportunities?sport=icehockey_nhl&market=h2h")
+        assert opportunities.status_code == 200
+        assert opportunities.json()["opportunities"][0]["books"][0] != opportunities.json()["opportunities"][0]["books"][1]
+        assert "ToonieBet" not in opportunities.json()["opportunities"][0]["books"]
+        assert float(opportunities.json()["opportunities"][0]["minimum_profit"]) > 0
+        candidate = opportunities.json()["opportunities"][0]
+        assert len(candidate["selected_quote_version_ids"]) == 2
+        assert candidate["period"] == "full_game"
+        assert candidate["mode"] == "indicative"
 
 
 def test_invalid_calculator_request_is_explicit() -> None:
-    response = client.post("/v1/calculators/hedge", json={"odds": [0, -110], "amount": "250"})
-    assert response.status_code == 422
+    with TestClient(app) as client:
+        response = client.post("/v1/calculators/hedge", json={"odds": [0, -110], "amount": "250"})
+        assert response.status_code == 422
 
 
 def test_manual_ledger_contract_persists_a_record() -> None:

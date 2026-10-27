@@ -1,3 +1,4 @@
+from datetime import datetime, timezone
 from decimal import Decimal, ROUND_HALF_UP
 import json
 from os import getenv
@@ -11,8 +12,9 @@ from pydantic import BaseModel, Field
 from .domain import CalculationError, calculate_hedge
 from .fixtures import fixture_board
 from .opportunities import detect_two_way_opportunities
-from .persistence import PairLedgerRecord, SavedCalculation, WatchlistEntry, create_schema, new_id, session
+from .persistence import Book, CanonicalEvent, Market, Outcome, PairLedgerRecord, Quote, QuoteVersion, SavedCalculation, WatchlistEntry, create_schema, new_id, session
 from .provider import OddsApiAdapter
+from .quote_lifecycle import expire_current_quotes, ingest_market_observations, is_active
 
 app = FastAPI(title="Ushio Odds API", version="0.1.0")
 app.add_middleware(CORSMiddleware, allow_origins=["http://localhost:5173", "http://127.0.0.1:5173"], allow_credentials=False, allow_methods=["GET", "POST"], allow_headers=["*"])
@@ -67,7 +69,38 @@ def odds(sport: str = Query("icehockey_nhl"), market: str = Query("h2h")) -> dic
 @app.get("/v1/opportunities")
 def opportunities(sport: str = Query("all"), market: str = Query("all")) -> dict:
     board = fixture_board(sport, market)
-    return {"mode": board["mode"], "provider": board["provider"], "opportunities": detect_two_way_opportunities(board["games"])}
+    received_at = datetime.now(timezone.utc)
+    with session() as database:
+        for game in board["games"]:
+            for quote in game["quotes"]:
+                observations = [{"provider": "deterministic-fixture", "region": board["region"], "book": quote["book"], "event_id": game["id"], "sport": game["sport"], "league": game["league"], "away": game["away"], "home": game["home"], "commence_time": game["commence_time"], "market": game["market"], "period": game["period"], "line": game.get("line"), "settlement_assumptions": "fixture-defined", "outcome": outcome, "position": position, "price": quote["prices"][position], "source_timestamp": board["as_of"], "status": "active", "raw_reference": f"fixture:{game['id']}:{quote['book']}"} for position, outcome in enumerate(game["outcomes"])]
+                ingest_market_observations(database, observations, received_at=received_at, ttl_seconds=300)
+        expire_current_quotes(database, now=received_at)
+        database.commit()
+        games = lifecycle_games(database, now=received_at)
+    return {"mode": board["mode"], "provider": board["provider"], "opportunities": detect_two_way_opportunities(games)}
+
+
+def lifecycle_games(database, *, now: datetime) -> list[dict]:
+    """Rebuild the comparison shape only from active, exact, versioned quotes."""
+    rows = (database.query(QuoteVersion, Book, Outcome, Market, CanonicalEvent).join(Quote, Quote.id == QuoteVersion.quote_id).join(Book, Book.id == Quote.book_id).join(Outcome, Outcome.id == Quote.outcome_id).join(Market, Market.id == Outcome.market_id).join(CanonicalEvent, CanonicalEvent.id == Market.event_id).filter(QuoteVersion.is_current.is_(True), QuoteVersion.status == "active").all())
+    grouped: dict[str, dict] = {}
+    for version, book, outcome, market, event in rows:
+        if not is_active(version, now=now):
+            continue
+        game = grouped.setdefault(market.id, {"id": event.source_event_id, "away": event.away, "home": event.home, "market": market.key, "period": market.period, "line": market.line, "outcomes": {}, "quotes": {}})
+        game["outcomes"][outcome.position] = outcome.label
+        quote = game["quotes"].setdefault(book.name, {"book": book.name, "prices": {}, "quote_version_ids": {}})
+        quote["prices"][outcome.position] = version.american_price
+        quote["quote_version_ids"][outcome.position] = version.id
+    result = []
+    for game in grouped.values():
+        if sorted(game["outcomes"]) != [0, 1]:
+            continue
+        quotes = [{"book": quote["book"], "prices": [quote["prices"][0], quote["prices"][1]], "quote_version_ids": [quote["quote_version_ids"][0], quote["quote_version_ids"][1]]} for quote in game["quotes"].values() if sorted(quote["prices"]) == [0, 1]]
+        if len(quotes) >= 2:
+            result.append({**game, "outcomes": [game["outcomes"][0], game["outcomes"][1]], "quotes": quotes})
+    return result
 
 
 @app.get("/v1/capabilities")
