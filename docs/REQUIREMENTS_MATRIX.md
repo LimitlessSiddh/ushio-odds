@@ -11,4 +11,4 @@
 | Performance ledger | Separate UI plus `/v1/ledger` persistence contract and append-only correction API with correction counts | Per-leg provenance and correction UI remain incomplete |
 | Quebec boundary | Explicit labels and documentation | Provider entitlement/eligibility unverified |
 | UI fidelity | approved palette/density, dark/light mode, compact calculator, responsive grid | Formal screenshot-diff suite still pending |
-| CI and reproducibility | Docker compose, Alembic revisions, pinned dependencies, GitHub workflow | Hosted run requires push/remote access |
+| CI and reproducibility | Docker compose, Alembic revisions, pinned dependencies, GitHub workflow; clean PostgreSQL Docker migration verified through `20261027_04` | Hosted run requires push/remote access |

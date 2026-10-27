@@ -12,6 +12,7 @@
 - Durable fixture quote-lifecycle foundation: provider/feed/book/event/market/outcome/quote/version records, exact market identity, source and receipt timestamps, stale expiry, suspended/missing states, and selected quote-version IDs on fixture opportunities.
 - Manual-ledger correction endpoint with append-only correction rows and an effective projection; original pair entries are never overwritten.
 - Browser-verified fixture workflow through the local API, including local Vite fallback-port CORS and watchlist reload persistence.
+- Clean Docker PostgreSQL migration verification through Alembic revision `20261027_04`; the containerized API health endpoint reports fixture mode with no provider key.
 
 ## Current source state
 
