@@ -186,6 +186,15 @@ def list_ledger() -> list[dict]:
         return [ledger_projection(database, row) for row in rows]
 
 
+@app.get("/v1/ledger/{record_id}/corrections")
+def list_ledger_corrections(record_id: str) -> list[dict]:
+    with session() as database:
+        if database.get(PairLedgerRecord, record_id) is None:
+            raise HTTPException(status_code=404, detail="Ledger record was not found.")
+        rows = database.query(PairLedgerCorrection).filter_by(record_id=record_id).order_by(PairLedgerCorrection.created_at.asc()).all()
+        return [{"id": row.id, "reason": row.reason, "status": row.status, "total_stake": f"{row.total_stake_minor / 100:.2f}", "returned": f"{row.returned_minor / 100:.2f}", "fees": f"{row.fees_minor / 100:.2f}", "created_at": row.created_at.isoformat()} for row in rows]
+
+
 def validate_ledger_money(status: str, total_stake: str, returned: str, fees: str) -> tuple[int, int, int]:
     try:
         stake, returned_minor, fees_minor = cents(total_stake), cents(returned), cents(fees)

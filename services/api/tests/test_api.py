@@ -57,6 +57,9 @@ def test_ledger_correction_is_immutable_and_changes_the_projection() -> None:
         assert record["returned"] == "108.50"
         assert record["fees"] == "0.50"
         assert record["correction_count"] == 1
+        audit = runtime.get(f"/v1/ledger/{created.json()['id']}/corrections")
+        assert audit.status_code == 200
+        assert audit.json()[0]["reason"] == "Result settled"
 
 
 def test_watchlist_toggle_persists_and_removes() -> None:
