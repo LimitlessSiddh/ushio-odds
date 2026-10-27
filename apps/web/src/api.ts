@@ -1,6 +1,6 @@
 import type { Board, Hedge, Opportunity, PairRecord, SavedScenario } from './types'
 
-const API = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'
+const API = import.meta.env.VITE_API_BASE_URL || `${window.location.protocol}//${window.location.hostname}:8000`
 
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
   const response = await fetch(`${API}${path}`, init)
