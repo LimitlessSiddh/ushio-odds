@@ -38,6 +38,13 @@ def test_invalid_calculator_request_is_explicit() -> None:
         assert response.status_code == 422
 
 
+def test_local_dev_cors_allows_vite_fallback_port() -> None:
+    with TestClient(app) as client:
+        response = client.options("/v1/health", headers={"Origin": "http://127.0.0.1:5175", "Access-Control-Request-Method": "GET"})
+        assert response.status_code == 200
+        assert response.headers["access-control-allow-origin"] == "http://127.0.0.1:5175"
+
+
 def test_manual_ledger_contract_persists_a_record() -> None:
     with TestClient(app) as runtime:
         response = runtime.post("/v1/ledger", json={"occurred_on": "2026-10-26", "event_name": "Fixture matchup", "books": "Book A / Book B", "status": "settled", "total_stake": "250.00", "returned": "252.80", "fees": "0.00"})
