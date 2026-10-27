@@ -6,6 +6,8 @@ from typing import Any
 
 import httpx
 
+from .books import canonical_selected_book, region_status
+
 
 @dataclass(frozen=True)
 class ProviderStatus:
@@ -68,12 +70,15 @@ def normalise_odds_payload(payload: list[dict[str, Any]], *, region: str, remain
             seen_groups.add(group_key)
             selected_books = []
             for book in event.get("bookmakers", []):
+                selected_book = canonical_selected_book(book.get("title", book.get("key", "")))
+                if selected_book is None:
+                    continue
                 matching = next((candidate for candidate in book.get("markets", []) if candidate.get("key") == market_key and [outcome_label(item) for item in candidate.get("outcomes", [])] == outcome_names), None)
                 if matching is None:
                     continue
                 book_prices = [item.get("price") for item in matching.get("outcomes", [])]
                 if len(book_prices) == 2 and all(isinstance(price, (int, float)) and abs(price) >= 100 for price in book_prices):
-                    selected_books.append({"book": book.get("title", book.get("key", "Unknown")), "prices": [int(book_prices[0]), int(book_prices[1])], "source_time": book.get("last_update") or matching.get("last_update")})
+                    selected_books.append({"book": selected_book, "prices": [int(book_prices[0]), int(book_prices[1])], "source_time": book.get("last_update") or matching.get("last_update"), "region_status": region_status(selected_book)})
             if len(selected_books) >= 2:
                 games.append({"id": f"{event.get('id', 'event')}:{market_key}:{':'.join(outcome_names)}", "sport": event.get("sport_key", "unknown"), "league": event.get("sport_title", event.get("sport_key", "Unknown")), "away": event.get("away_team", "Away"), "home": event.get("home_team", "Home"), "commence_time": event.get("commence_time"), "market": market_key, "period": "provider_declared", "outcomes": outcome_names, "quotes": selected_books})
     return {"mode": "live", "provider": "the-odds-api", "region": region, "as_of": None, "credit_state": {"status": "available", "remaining": remaining}, "capabilities": {"sports": [], "markets": [], "props": []}, "games": games}

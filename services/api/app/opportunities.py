@@ -18,6 +18,8 @@ def detect_two_way_opportunities(games: list[dict[str, Any]], budget: Decimal = 
             for second in quotes:
                 if first.get("book") == second.get("book"):
                     continue
+                if first.get("region_status") == "excluded" or second.get("region_status") == "excluded":
+                    continue
                 prices = [first.get("prices", [None, None])[0], second.get("prices", [None, None])[1]]
                 if not all(isinstance(price, int) for price in prices):
                     continue

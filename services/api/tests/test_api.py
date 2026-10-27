@@ -19,10 +19,14 @@ def test_fixture_odds_and_calculator_contracts() -> None:
     prop_board = client.get("/v1/odds?sport=basketball_nba&market=player_points")
     assert prop_board.status_code == 200
     assert prop_board.json()["games"][0]["outcomes"][0].endswith("points")
+    assert prop_board.json()["capabilities"]["books"][-1] == "Rainbet"
+    assert len(prop_board.json()["games"][0]["quotes"]) == 11
+    assert next(quote for quote in prop_board.json()["games"][0]["quotes"] if quote["book"] == "ToonieBet")["region_status"] == "excluded"
 
     opportunities = client.get("/v1/opportunities?sport=icehockey_nhl&market=h2h")
     assert opportunities.status_code == 200
     assert opportunities.json()["opportunities"][0]["books"][0] != opportunities.json()["opportunities"][0]["books"][1]
+    assert "ToonieBet" not in opportunities.json()["opportunities"][0]["books"]
     assert float(opportunities.json()["opportunities"][0]["minimum_profit"]) > 0
 
     prop_board = client.get("/v1/odds?sport=basketball_nba&market=player_points")
@@ -55,8 +59,9 @@ def test_watchlist_toggle_persists_and_removes() -> None:
 
 
 def test_provider_normaliser_excludes_incomplete_or_three_way_groups() -> None:
-    payload = [{"id": "fixture-event", "sport_key": "basketball_nba", "sport_title": "NBA", "away_team": "Away", "home_team": "Home", "commence_time": "2026-10-26T00:00:00Z", "bookmakers": [{"title": "Book A", "last_update": "2026-10-26T00:00:00Z", "markets": [{"key": "player_points", "outcomes": [{"name": "Over", "description": "Sample Player", "point": 20.5, "price": 110}, {"name": "Under", "description": "Sample Player", "point": 20.5, "price": -130}]}]}, {"title": "Book B", "last_update": "2026-10-26T00:00:00Z", "markets": [{"key": "player_points", "outcomes": [{"name": "Over", "description": "Sample Player", "point": 20.5, "price": 105}, {"name": "Under", "description": "Sample Player", "point": 20.5, "price": -125}]}, {"key": "h2h", "outcomes": [{"name": "Away", "price": 200}, {"name": "Home", "price": 150}, {"name": "Draw", "price": 220}]}]}]}]
+    payload = [{"id": "fixture-event", "sport_key": "basketball_nba", "sport_title": "NBA", "away_team": "Away", "home_team": "Home", "commence_time": "2026-10-26T00:00:00Z", "bookmakers": [{"title": "Stake", "last_update": "2026-10-26T00:00:00Z", "markets": [{"key": "player_points", "outcomes": [{"name": "Over", "description": "Sample Player", "point": 20.5, "price": 110}, {"name": "Under", "description": "Sample Player", "point": 20.5, "price": -130}]}]}, {"title": "Betway", "last_update": "2026-10-26T00:00:00Z", "markets": [{"key": "player_points", "outcomes": [{"name": "Over", "description": "Sample Player", "point": 20.5, "price": 105}, {"name": "Under", "description": "Sample Player", "point": 20.5, "price": -125}]}, {"key": "h2h", "outcomes": [{"name": "Away", "price": 200}, {"name": "Home", "price": 150}, {"name": "Draw", "price": 220}]}]}, {"title": "Unselected Book", "last_update": "2026-10-26T00:00:00Z", "markets": [{"key": "player_points", "outcomes": [{"name": "Over", "description": "Sample Player", "point": 20.5, "price": 130}, {"name": "Under", "description": "Sample Player", "point": 20.5, "price": -150}]}]}]}]
     board = normalise_odds_payload(payload, region="ca", remaining=100)
     assert len(board["games"]) == 1
     assert board["games"][0]["market"] == "player_points"
     assert board["games"][0]["outcomes"] == ["Sample Player Over 20.5", "Sample Player Under 20.5"]
+    assert [quote["book"] for quote in board["games"][0]["quotes"]] == ["Stake", "Betway"]

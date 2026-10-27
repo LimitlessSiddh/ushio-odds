@@ -4,6 +4,7 @@
 | --- | --- | --- |
 | Exact money calculations | `services/api/app/domain.py`, seven API/domain tests | Fees and book limits are not yet modelled per source |
 | Source distinction | Fixture mode and provider status responses | No permitted key supplied |
+| Selected bookmaker universe | Fixture and provider normalisation use the owner's exact 11-book list; Ontario-only ToonieBet is disabled in pair selection and excluded from candidate detection | Source coverage and account eligibility remain unverified; TonyBet remains marked unresolved |
 | Odds comparison | Real API-backed paired odds grid | Fixture has NHL/NBA moneylines only |
 | Watchlist / saved scenarios | Server-backed endpoints; UI loads/saves through local API; browser reload proof for a player-prop watchlist item | Saved-scenario restart assertion remains to add |
 | Performance ledger | Separate UI plus `/v1/ledger` persistence contract | Corrections and per-leg audit trail remain incomplete |
