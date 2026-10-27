@@ -215,7 +215,8 @@ def ledger_projection(database, row: PairLedgerRecord) -> dict:
     stake = correction.total_stake_minor if correction else row.total_stake_minor
     returned = correction.returned_minor if correction else row.returned_minor
     fees = correction.fees_minor if correction else row.fees_minor
-    return {"id": row.id, "occurred_on": row.occurred_on, "event_name": row.event_name, "books": row.books, "status": status, "total_stake": f"{stake / 100:.2f}", "returned": f"{returned / 100:.2f}", "fees": f"{fees / 100:.2f}", "source": row.source, "correction_count": database.query(PairLedgerCorrection).filter_by(record_id=row.id).count()}
+    original = {"status": row.status, "total_stake": f"{row.total_stake_minor / 100:.2f}", "returned": f"{row.returned_minor / 100:.2f}", "fees": f"{row.fees_minor / 100:.2f}", "created_at": row.created_at.isoformat()}
+    return {"id": row.id, "occurred_on": row.occurred_on, "event_name": row.event_name, "books": row.books, "status": status, "total_stake": f"{stake / 100:.2f}", "returned": f"{returned / 100:.2f}", "fees": f"{fees / 100:.2f}", "source": row.source, "original": original, "correction_count": database.query(PairLedgerCorrection).filter_by(record_id=row.id).count()}
 
 
 @app.post("/v1/ledger", status_code=201)

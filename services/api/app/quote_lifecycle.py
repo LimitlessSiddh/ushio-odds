@@ -117,7 +117,8 @@ def ingest_observation(session: Session, data: dict[str, Any], *, received_at: d
         raise QuoteLifecycleError("Outcome position conflicts with existing market identity.")
     quote = get_or_create(session, Quote, {}, feed_id=feed.id, book_id=book.id, outcome_id=outcome.id)
 
-    current = session.query(QuoteVersion).filter_by(quote_id=quote.id, is_current=True).one_or_none()
+    currents = session.query(QuoteVersion).filter_by(quote_id=quote.id, is_current=True).order_by(QuoteVersion.source_timestamp.desc(), QuoteVersion.received_timestamp.desc()).all()
+    current = currents[0] if currents else None
     expired_on_receipt = source_at + timedelta(seconds=ttl_seconds) <= received
     reason: str | None = "expired_on_receipt" if expired_on_receipt and status == ACTIVE else None
     if expired_on_receipt and status == ACTIVE:
@@ -126,8 +127,9 @@ def ingest_observation(session: Session, data: dict[str, Any], *, received_at: d
     if not is_current:
         reason = "out_of_order"
     elif current is not None:
-        current.is_current = False
-        current.invalidation_reason = "superseded" if status == ACTIVE else status
+        for prior in currents:
+            prior.is_current = False
+            prior.invalidation_reason = "superseded" if status == ACTIVE else status
     version = QuoteVersion(
         id=new_id(), quote_id=quote.id, observation_key=key, american_price=int(data["price"]), source_timestamp=source_at,
         received_timestamp=received, expires_at=source_at + timedelta(seconds=ttl_seconds), status=status,

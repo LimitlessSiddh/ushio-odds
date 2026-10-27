@@ -74,9 +74,18 @@ def test_ledger_correction_is_immutable_and_changes_the_projection() -> None:
         assert record["returned"] == "108.50"
         assert record["fees"] == "0.50"
         assert record["correction_count"] == 1
+        assert record["original"] == {"status": "open", "total_stake": "100.00", "returned": "0.00", "fees": "0.00", "created_at": record["original"]["created_at"]}
         audit = runtime.get(f"/v1/ledger/{created.json()['id']}/corrections")
         assert audit.status_code == 200
         assert audit.json()[0]["reason"] == "Result settled"
+
+
+def test_ledger_correction_rejects_an_invalid_open_projection() -> None:
+    with TestClient(app) as runtime:
+        created = runtime.post("/v1/ledger", json={"occurred_on": "2026-10-27", "event_name": "Fixture correction validation", "books": "Book A / Book B", "status": "settled", "total_stake": "100.00", "returned": "108.50", "fees": "0"})
+        correction = runtime.post(f"/v1/ledger/{created.json()['id']}/corrections", json={"reason": "Incorrect open amount", "status": "open", "total_stake": "100.00", "returned": "1.00", "fees": "0"})
+        assert correction.status_code == 422
+        assert correction.json()["detail"] == "Open records must have zero returned amount and fees."
 
 
 def test_watchlist_toggle_persists_and_removes() -> None:

@@ -58,6 +58,16 @@ def test_out_of_order_quote_cannot_replace_current_price(database) -> None:
     assert older.invalidation_reason == "out_of_order"
 
 
+def test_new_observation_repairs_legacy_multiple_current_versions(database) -> None:
+    first = ingest_observation(database, observation(price=-110), received_at=NOW)
+    second = ingest_observation(database, observation(price=-105, source_timestamp=(NOW + timedelta(seconds=1)).isoformat()), received_at=NOW + timedelta(seconds=1))
+    first.is_current = True  # Simulate a pre-constraint persisted legacy state.
+    repaired = ingest_observation(database, observation(price=-108, source_timestamp=(NOW + timedelta(seconds=2)).isoformat()), received_at=NOW + timedelta(seconds=2))
+    current = database.query(QuoteVersion).filter_by(is_current=True).all()
+    assert [row.id for row in current] == [repaired.id]
+    assert second.invalidation_reason == "superseded"
+
+
 def test_suspended_and_expired_current_quotes_are_invalidated(database) -> None:
     active = ingest_observation(database, observation(), received_at=NOW, ttl_seconds=30)
     suspended = ingest_observation(database, observation(status="suspended", source_timestamp=(NOW + timedelta(seconds=1)).isoformat()), received_at=NOW + timedelta(seconds=1), ttl_seconds=30)
