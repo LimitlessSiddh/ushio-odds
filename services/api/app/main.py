@@ -132,13 +132,14 @@ def refresh_provider(request: ProviderRefreshRequest) -> dict:
     except httpx.HTTPError as error:
         record_capability_evidence(provider="the-odds-api", sport=request.sport, market=request.market, region=status.region, received=received, quota=None, outcome="failed", failure="Provider request failed", unknowns="No observation was accepted; source availability and coverage remain unknown.")
         raise HTTPException(status_code=502, detail="Provider request failed; fixture mode remains available.") from error
-    for game in board["games"]:
-        for quote in game["quotes"]:
-            record_capability_evidence(provider="the-odds-api", sport=request.sport, market=request.market, region=status.region, book=quote["book"], source_time=quote.get("source_time"), received=received, quota=board["credit_state"]["remaining"], outcome="observed", unknowns="Period, settlement assumptions, exact source status, limits, fees, FX, and Quebec eligibility were not supplied by this bounded board response.", details={"event_id": game["id"], "outcomes": game["outcomes"], "prices": quote["prices"]})
-    return board | {"observation_state": "provider-observed-not-revalidated", "revalidation_reason": "Exact period, settlement assumptions, and source-specific status are required before lifecycle ingestion."}
+    board["as_of"] = received.isoformat()
+    summary = board["coverage_summary"]
+    outcome = "observed" if board["games"] else "observed-empty"
+    evidence = record_capability_evidence(provider="the-odds-api", sport=request.sport, market=request.market, region=status.region, received=received, quota=board["credit_state"]["remaining"], outcome=outcome, unknowns="Period, settlement assumptions, exact source status, limits, fees, FX, display rights, and Quebec eligibility were not supplied by this bounded board response.", details={"coverage_summary": summary})
+    return board | {"observation_state": "provider-observed-not-revalidated", "revalidation_reason": "Exact period, settlement assumptions, and source-specific status are required before lifecycle ingestion.", "evidence": evidence}
 
 
-def record_capability_evidence(*, provider: str, sport: str, market: str, region: str, received: datetime, quota: int | None, outcome: str, failure: str | None = None, unknowns: str = "", book: str | None = None, source_time: str | None = None, details: dict | None = None) -> None:
+def record_capability_evidence(*, provider: str, sport: str, market: str, region: str, received: datetime, quota: int | None, outcome: str, failure: str | None = None, unknowns: str = "", book: str | None = None, source_time: str | None = None, details: dict | None = None) -> dict:
     source = None
     if source_time:
         try:
@@ -146,15 +147,21 @@ def record_capability_evidence(*, provider: str, sport: str, market: str, region
         except ValueError:
             pass
     with session() as database:
-        database.add(ProviderCapabilityEvidence(id=new_id(), provider=provider, sport=sport, market=market, region=region, book=book, source_timestamp=source, received_timestamp=received, quota_remaining=quota, outcome=outcome, failure_reason=failure, unknowns=unknowns, details=json.dumps(details or {}, separators=(",", ":"))))
+        row = ProviderCapabilityEvidence(id=new_id(), provider=provider, sport=sport, market=market, region=region, book=book, source_timestamp=source, received_timestamp=received, quota_remaining=quota, outcome=outcome, failure_reason=failure, unknowns=unknowns, details=json.dumps(details or {}, separators=(",", ":")))
+        database.add(row)
         database.commit()
+        return evidence_row(row)
+
+
+def evidence_row(row: ProviderCapabilityEvidence) -> dict:
+    return {"id": row.id, "provider": row.provider, "sport": row.sport, "market": row.market, "region": row.region, "book": row.book, "source_timestamp": row.source_timestamp.isoformat() if row.source_timestamp else None, "received_timestamp": row.received_timestamp.isoformat(), "quota_remaining": row.quota_remaining, "outcome": row.outcome, "failure_reason": row.failure_reason, "unknowns": row.unknowns, "details": json.loads(row.details)}
 
 
 @app.get("/v1/provider/evidence")
 def provider_evidence() -> list[dict]:
     with session() as database:
         rows = database.query(ProviderCapabilityEvidence).order_by(ProviderCapabilityEvidence.received_timestamp.desc()).all()
-        return [{"id": row.id, "provider": row.provider, "sport": row.sport, "market": row.market, "region": row.region, "book": row.book, "source_timestamp": row.source_timestamp.isoformat() if row.source_timestamp else None, "received_timestamp": row.received_timestamp.isoformat(), "quota_remaining": row.quota_remaining, "outcome": row.outcome, "failure_reason": row.failure_reason, "unknowns": row.unknowns, "details": json.loads(row.details)} for row in rows]
+        return [evidence_row(row) for row in rows]
 
 
 @app.get("/v1/watchlist")

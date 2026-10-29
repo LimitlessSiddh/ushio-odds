@@ -22,6 +22,23 @@ test.beforeEach(async ({ page }) => {
   await expect(page.getByText('Fixture replay · no provider observation yet')).toBeVisible()
 })
 
+test('no-key refresh records a deferred provider-evidence state without replacing fixtures', async ({ page }) => {
+  await page.getByRole('button', { name: '↻ Record provider observation' }).click()
+  await expect(page.getByRole('alert')).toContainText('Refresh is disabled until a permitted key is supplied.')
+  await expect(page.getByLabel('Provider evidence history')).toContainText('deferred')
+  await expect(page.getByText('Fixture replay · no provider observation yet')).toBeVisible()
+})
+
+test('a mocked successful empty observation explains coverage diagnostics', async ({ page }) => {
+  await page.route('**/v1/provider/refresh', route => route.fulfill({ contentType: 'application/json', body: JSON.stringify({
+    mode: 'live', provider: 'the-odds-api', region: 'ca', as_of: '2026-10-29T12:00:00Z', credit_state: { status: 'available', remaining: 98 }, capabilities: { sports: [], markets: [], props: [] }, games: [], observation_state: 'provider-observed-not-revalidated', revalidation_reason: 'Exact period, settlement assumptions, and source-specific status are required before lifecycle ingestion.', coverage_summary: { raw_event_count: 1, raw_bookmaker_count: 3, raw_bookmaker_titles: ['Unknown CA', 'Stake', 'ToonieBet'], raw_market_count: 3, raw_market_keys: ['h2h'], selected_book_title_matches: { Stake: ['Stake'] }, rejection_counts: { unknown_book: 1, excluded_book: 1, invalid_two_way_market: 0, missing_price_or_identity: 0, one_eligible_book: 1 }, normalized_event_count: 0, accepted_market_count: 0, source_timing: { available: false, timestamp_count: 0, earliest: null, latest: null } }, evidence: { id: 'mocked-observed-empty', provider: 'the-odds-api', sport: 'icehockey_nhl', market: 'h2h', region: 'ca', book: null, source_timestamp: null, received_timestamp: '2026-10-29T12:00:00Z', quota_remaining: 98, outcome: 'observed-empty', failure_reason: null, unknowns: 'Quebec eligibility remains unknown.', details: { coverage_summary: { raw_event_count: 1, raw_bookmaker_count: 3, raw_bookmaker_titles: ['Unknown CA', 'Stake', 'ToonieBet'], raw_market_count: 3, raw_market_keys: ['h2h'], selected_book_title_matches: { Stake: ['Stake'] }, rejection_counts: { unknown_book: 1, excluded_book: 1, invalid_two_way_market: 0, missing_price_or_identity: 0, one_eligible_book: 1 }, normalized_event_count: 0, accepted_market_count: 0, source_timing: { available: false, timestamp_count: 0, earliest: null, latest: null } } } }
+  }) }))
+  await page.getByRole('button', { name: '↻ Record provider observation' }).click()
+  await expect(page.getByLabel('Provider observation')).toContainText('no complete selected-book pair survived normalization')
+  await expect(page.getByLabel('Provider observation')).toContainText('Rejected: unknown book: 1 · excluded book: 1 · one eligible book: 1')
+  await expect(page.getByLabel('Provider evidence history')).toContainText('observed-empty')
+})
+
 test('saves a selected fixture hedge and retains it after reload', async ({ page }) => {
   await page.locator('button.best').first().click()
   await expect(page.getByText('Minimum outcome profit')).toBeVisible()

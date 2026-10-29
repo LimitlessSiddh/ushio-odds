@@ -5,7 +5,7 @@ from sqlalchemy.orm import sessionmaker
 
 from app.main import app
 from app.persistence import Base
-from app.provider import normalise_odds_payload, persist_validated_provider_market
+from app.provider import OddsApiAdapter, normalise_odds_payload, persist_validated_provider_market
 from app.quote_lifecycle import QuoteLifecycleError
 
 
@@ -144,6 +144,57 @@ def test_provider_normaliser_excludes_incomplete_or_three_way_groups() -> None:
     assert board["games"][0]["market"] == "player_points"
     assert board["games"][0]["outcomes"] == ["Sample Player Over 20.5", "Sample Player Under 20.5"]
     assert [quote["book"] for quote in board["games"][0]["quotes"]] == ["Stake", "Betway"]
+
+
+def test_provider_coverage_summary_explains_empty_and_never_retains_a_key() -> None:
+    payload = [{"id": "coverage-event", "sport_key": "icehockey_nhl", "sport_title": "NHL", "away_team": "Away", "home_team": "Home", "bookmakers": [
+        {"title": "Unknown CA", "last_update": "2026-10-29T12:00:00Z", "markets": [{"key": "h2h", "outcomes": [{"name": "Away", "price": 110}, {"name": "Home", "price": -120}]}]},
+        {"title": "Stake", "markets": [{"key": "h2h", "outcomes": [{"name": "Away", "price": 110}, {"name": "Home", "price": -120}]}]},
+        {"title": "ToonieBet", "markets": [{"key": "h2h", "outcomes": [{"name": "Away", "price": 110}, {"name": "Home", "price": -120}]}]},
+        {"title": "Betway", "markets": [{"key": "h2h", "outcomes": [{"name": "Away", "price": 200}, {"name": "Home", "price": 150}, {"name": "Draw", "price": 220}]}]},
+    ]}]
+    board = normalise_odds_payload(payload, region="ca", remaining=99)
+    summary = board["coverage_summary"]
+    assert board["games"] == []
+    assert summary["raw_event_count"] == 1
+    assert summary["raw_bookmaker_count"] == 4
+    assert summary["raw_market_keys"] == ["h2h"]
+    assert summary["selected_book_title_matches"] == {"Betway": ["Betway"], "Stake": ["Stake"]}
+    assert summary["rejection_counts"]["unknown_book"] == 1
+    assert summary["rejection_counts"]["excluded_book"] == 1
+    assert summary["rejection_counts"]["invalid_two_way_market"] >= 1
+    assert summary["rejection_counts"]["one_eligible_book"] >= 1
+    assert summary["source_timing"]["available"] is True
+    assert "apiKey" not in str(summary)
+    assert "secret" not in str(summary).lower()
+
+
+def test_provider_coverage_summary_accepts_two_selected_books_with_missing_source_times() -> None:
+    payload = [{"id": "eligible-event", "sport_key": "icehockey_nhl", "sport_title": "NHL", "away_team": "Away", "home_team": "Home", "bookmakers": [
+        {"title": "Stake", "markets": [{"key": "h2h", "outcomes": [{"name": "Away", "price": 110}, {"name": "Home", "price": -120}]}]},
+        {"title": "Betway", "markets": [{"key": "h2h", "outcomes": [{"name": "Away", "price": 105}, {"name": "Home", "price": -125}]}]},
+    ]}]
+    board = normalise_odds_payload(payload, region="ca", remaining=99)
+    assert len(board["games"]) == 1
+    assert board["coverage_summary"]["accepted_market_count"] == 1
+    assert board["coverage_summary"]["source_timing"] == {"available": False, "timestamp_count": 0, "earliest": None, "latest": None}
+
+
+def test_successful_empty_refresh_persists_one_request_level_observation(monkeypatch) -> None:
+    empty_board = normalise_odds_payload([], region="ca", remaining=98)
+    monkeypatch.setattr(OddsApiAdapter, "fetch_selected_market", lambda self, sport, market: empty_board)
+    monkeypatch.setattr(OddsApiAdapter, "status", lambda self: type("Status", (), {"configured": True, "region": "ca", "credit_floor": 25})())
+    with TestClient(app) as runtime:
+        response = runtime.post("/v1/provider/refresh", json={"sport": "icehockey_nhl", "market": "h2h"})
+        assert response.status_code == 200
+        body = response.json()
+        assert body["observation_state"] == "provider-observed-not-revalidated"
+        assert body["evidence"]["outcome"] == "observed-empty"
+        assert body["coverage_summary"]["raw_event_count"] == 0
+        evidence = runtime.get("/v1/provider/evidence").json()
+        row = next(item for item in evidence if item["id"] == body["evidence"]["id"])
+        assert row["details"]["coverage_summary"] == body["coverage_summary"]
+        assert "apiKey" not in str(row)
 
 
 def test_missing_key_creates_deferred_capability_evidence() -> None:

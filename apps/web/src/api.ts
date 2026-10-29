@@ -1,4 +1,4 @@
-import type { Board, Hedge, LedgerCorrection, LedgerSnapshot, LedgerSummary, Opportunity, PairRecord, ProviderObservation, SavedScenario } from './types'
+import type { Board, Hedge, LedgerCorrection, LedgerSnapshot, LedgerSummary, Opportunity, PairRecord, ProviderEvidence, ProviderObservation, SavedScenario } from './types'
 
 const API = import.meta.env.VITE_API_BASE_URL || `${window.location.protocol}//${window.location.hostname}:8000`
 
@@ -15,6 +15,7 @@ export const getBoard = (sport: string, market: string) => request<Board>(`/v1/o
 export const getOpportunities = (sport: string, market: string) => request<{ mode: string; provider: string; opportunities: Opportunity[] }>(`/v1/opportunities?sport=${encodeURIComponent(sport)}&market=${encodeURIComponent(market)}`)
 export const calculate = (odds: number[], amount: string, mode: 'budget' | 'fixed_first') => request<Hedge>('/v1/calculators/hedge', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ odds, amount, mode }) })
 export const refreshProviderBoard = (sport: string, market: string) => request<ProviderObservation>('/v1/provider/refresh', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ sport, market }) })
+export const getProviderEvidence = () => request<ProviderEvidence[]>('/v1/provider/evidence')
 export const getWatchlist = () => request<string[]>('/v1/watchlist')
 export const toggleWatchlist = (eventId: string) => request<{ event_id: string; watched: boolean }>('/v1/watchlist', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ event_id: eventId }) })
 export const getSaved = () => request<Array<{ id: string; title: string; payload: Omit<SavedScenario, 'id' | 'title' | 'createdAt'>; created_at: string }>>('/v1/saved-calculations')
