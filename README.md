@@ -10,6 +10,8 @@ Local, single-user odds research software. It ships with deterministic fixtures 
 
 Without a key, the API deliberately stays in fixture mode. With a key, the provider adapter is still quota guarded and only refreshes an explicitly selected sport/market.
 
+After adding a permitted key, use **Record provider observation** once. The fixture comparison remains intact while the returned provider board, requested region, remaining credits, and revalidation boundary are displayed separately. This records observed data; it does not claim a confirmed wager, Quebec eligibility, or revalidated opportunity.
+
 ## Verify locally without Docker
 
 The API image uses Python 3.12. For a local test environment, use Python 3.12 where available:

@@ -19,7 +19,7 @@ function basisPoints(value: number) {
 test.beforeEach(async ({ page }) => {
   await page.goto('/')
   await expect(page.getByRole('heading', { name: 'Odds screen' })).toBeVisible()
-  await expect(page.getByText('Fixture replay · no provider key')).toBeVisible()
+  await expect(page.getByText('Fixture replay · no provider observation yet')).toBeVisible()
 })
 
 test('saves a selected fixture hedge and retains it after reload', async ({ page }) => {
