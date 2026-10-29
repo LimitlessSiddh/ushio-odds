@@ -1,0 +1,32 @@
+services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: ushio
+      POSTGRES_USER: ushio
+      POSTGRES_PASSWORD: ushio
+    ports: ["5432:5432"]
+    volumes: ["postgres-data:/var/lib/postgresql/data"]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ushio -d ushio"]
+      interval: 5s
+      timeout: 3s
+      retries: 12
+  api:
+    build: ./services/api
+    environment:
+      USHIO_DATABASE_URL: postgresql+psycopg://ushio:ushio@db:5432/ushio
+      USHIO_ODDS_API_KEY: ${USHIO_ODDS_API_KEY:-}
+      USHIO_ODDS_API_REGION: ${USHIO_ODDS_API_REGION:-ca}
+      USHIO_ODDS_API_CREDIT_FLOOR: ${USHIO_ODDS_API_CREDIT_FLOOR:-25}
+    ports: ["8000:8000"]
+    depends_on:
+      db: { condition: service_healthy }
+  web:
+    build: ./apps/web
+    environment:
+      VITE_API_BASE_URL: http://localhost:8000
+    ports: ["5173:5173"]
+    depends_on: [api]
+volumes:
+  postgres-data:

@@ -1,0 +1,34 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: '3.12' }
+      - uses: actions/setup-node@v4
+        with: { node-version: '24', cache: 'npm', cache-dependency-path: 'apps/web/package-lock.json' }
+      - run: pip install -r services/api/requirements.txt
+      - run: cd services/api && USHIO_DATABASE_URL=sqlite:////tmp/ushio-ci.db PYTHONPATH=. alembic -c alembic.ini upgrade head
+      - run: PYTHONPATH=services/api pytest services/api/tests -q
+      - run: npm --prefix apps/web ci
+      - run: npm --prefix apps/web run check
+      - run: npm --prefix apps/web run build
+      - run: cd apps/web && npx playwright install --with-deps chromium
+      - run: npm --prefix apps/web run test:e2e
+      - if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: |
+            apps/web/playwright-report
+            apps/web/test-results
+          if-no-files-found: ignore
