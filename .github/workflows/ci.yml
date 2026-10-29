@@ -22,7 +22,7 @@ jobs:
       - run: npm --prefix apps/web ci
       - run: npm --prefix apps/web run check
       - run: npm --prefix apps/web run build
-      - run: npx --yes playwright install --with-deps chromium
+      - run: cd apps/web && npx playwright install --with-deps chromium
       - run: npm --prefix apps/web run test:e2e
       - if: always()
         uses: actions/upload-artifact@v4
