@@ -10,3 +10,5 @@ coverage/
 postgres-data/
 ushio-local.db
 .playwright-cli/
+apps/web/test-results/
+apps/web/playwright-report/

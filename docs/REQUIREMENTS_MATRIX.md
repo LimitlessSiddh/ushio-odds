@@ -2,13 +2,14 @@
 
 | Requirement | Implemented evidence | Current limitation |
 | --- | --- | --- |
-| Exact money calculations | `services/api/app/domain.py`, seven API/domain tests | Fees and book limits are not yet modelled per source |
-| Source distinction | Fixture mode, provider status, and quote source/receipt timestamps with stale/suspended/missing state | No permitted key supplied; no revalidation implementation |
+| Exact money calculations | Decimal hedge engine plus integer-minor-unit ledger summary/effective-projection tests | Source-specific book limits and non-zero provider fee/FX observations are explicitly unsupported and rejected rather than assumed |
+| Source distinction | Fixture mode, durable capability evidence, quote source/receipt timestamps, stale/suspended/missing state, and fail-closed provider contract tests | No permitted key supplied; no external observation or revalidation evidence |
 | Selected bookmaker universe | Fixture and provider normalisation use the owner's exact 11-book list; Ontario-only ToonieBet is disabled in pair selection and excluded from candidate detection | Source coverage and account eligibility remain unverified; TonyBet remains marked unresolved |
 | Odds comparison | Local API-backed paired fixture grid; opportunities trace selected quote-version IDs and Decimal inputs | Fixture has NHL/NBA moneylines only; no live provider observation persistence |
-| Quote lifecycle | Alembic revision `20261027_03`; deterministic lifecycle tests for duplicate/future/stale/out-of-order/suspended/mismatched inputs | Provider refresh remains deliberately non-persistent pending permitted capability scan |
-| Watchlist / saved scenarios | Server-backed endpoints; UI loads/saves through local API; browser reload proof for a fixture watchlist item | Saved-scenario restart assertion remains to add |
-| Performance ledger | Separate UI plus `/v1/ledger` persistence contract and append-only correction API with correction counts | Per-leg provenance and correction UI remain incomplete |
+| Quote lifecycle | Alembic revision `20261028_05`; deterministic lifecycle tests plus accepted exact provider samples persist through the same versioned lifecycle | No authorized external observation exists |
+| Watchlist / saved scenarios | Server-backed endpoints; passed browser workflows cover saved-scenario and watchlist reload behavior against the local API/PostgreSQL database | CI artifact will be produced on next pushed workflow run |
+| Performance ledger | Manual-source and structured sourced-pair provenance, append-only corrections, correction history, integer-minor-unit summary, and passed browser required-reason/reload workflow | UI-created records remain manual research entries; execution, sportsbook sync, and unsupported source fees/FX are out of scope |
 | Quebec boundary | Explicit labels and documentation | Provider entitlement/eligibility unverified |
-| UI fidelity | approved palette/density, dark/light mode, compact calculator, responsive grid | Formal screenshot-diff suite still pending |
-| CI and reproducibility | Docker compose, Alembic revisions, pinned dependencies, GitHub workflow; clean PostgreSQL Docker migration verified through `20261027_04` | Hosted run requires push/remote access |
+| UI fidelity | approved palette/density, dark/light mode, compact calculator, responsive grid, and current 40-image fixture-mode visual capture/readback | Formal pixel-diff and full screen-reader suites remain Phase 2 enhancements |
+| CI and reproducibility | Docker compose, Alembic revisions through `20261028_05`, pinned dependencies, backend tests in the Python 3.12 image, passed local browser workflows, and GitHub workflow | Hosted CI artifact requires a push/remote run |
+| Worker / stream / replay boundary | `docs/adr/0001-defer-continuous-worker-stream-and-replay.md` records the local-release decision and precise Phase 2 entry criteria | No continuous collection, durable outbox/SSE, or live recovery proof until authorized provider scope exists |

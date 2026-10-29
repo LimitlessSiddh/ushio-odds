@@ -31,6 +31,7 @@ class PairLedgerRecord(Base):
     returned_minor: Mapped[int] = mapped_column(Integer)
     fees_minor: Mapped[int] = mapped_column(Integer)
     source: Mapped[str] = mapped_column(String(32), default="manual")
+    provenance: Mapped[str] = mapped_column(Text, default='{"kind":"manual-source"}')
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))
 
 
@@ -44,6 +45,23 @@ class PairLedgerCorrection(Base):
     returned_minor: Mapped[int] = mapped_column(Integer, nullable=False)
     fees_minor: Mapped[int] = mapped_column(Integer, nullable=False)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))
+
+
+class ProviderCapabilityEvidence(Base):
+    __tablename__ = "provider_capability_evidence"
+    id: Mapped[str] = mapped_column(String(36), primary_key=True)
+    provider: Mapped[str] = mapped_column(String(100), nullable=False)
+    sport: Mapped[str] = mapped_column(String(100), nullable=False)
+    market: Mapped[str] = mapped_column(String(100), nullable=False)
+    region: Mapped[str] = mapped_column(String(32), nullable=False)
+    book: Mapped[str | None] = mapped_column(String(180))
+    source_timestamp: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    received_timestamp: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+    quota_remaining: Mapped[int | None] = mapped_column(Integer)
+    outcome: Mapped[str] = mapped_column(String(32), nullable=False)
+    failure_reason: Mapped[str | None] = mapped_column(Text)
+    unknowns: Mapped[str] = mapped_column(Text, default="")
+    details: Mapped[str] = mapped_column(Text, default="{}")
 
 
 class WatchlistEntry(Base):

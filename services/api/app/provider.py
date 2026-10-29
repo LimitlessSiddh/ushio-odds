@@ -7,6 +7,7 @@ from typing import Any
 import httpx
 
 from .books import canonical_selected_book, region_status
+from .quote_lifecycle import QuoteLifecycleError, ingest_market_observations
 
 
 @dataclass(frozen=True)
@@ -82,3 +83,25 @@ def normalise_odds_payload(payload: list[dict[str, Any]], *, region: str, remain
             if len(selected_books) >= 2:
                 games.append({"id": f"{event.get('id', 'event')}:{market_key}:{':'.join(outcome_names)}", "sport": event.get("sport_key", "unknown"), "league": event.get("sport_title", event.get("sport_key", "Unknown")), "away": event.get("away_team", "Away"), "home": event.get("home_team", "Home"), "commence_time": event.get("commence_time"), "market": market_key, "period": "provider_declared", "outcomes": outcome_names, "quotes": selected_books})
     return {"mode": "live", "provider": "the-odds-api", "region": region, "as_of": None, "credit_state": {"status": "available", "remaining": remaining}, "capabilities": {"sports": [], "markets": [], "props": []}, "games": games}
+
+
+def persist_validated_provider_market(session: Any, observations: list[dict[str, Any]], *, received_at: Any, ttl_seconds: int = 90) -> list[Any]:
+    """Persist only a complete, explicitly normalized two-way provider market.
+
+    Raw provider boards are intentionally not passed here: a fetch alone lacks
+    settlement semantics and must remain provider-observed rather than revalidated.
+    """
+    required = {"provider", "region", "book", "event_id", "sport", "league", "away", "home", "market", "period", "settlement_assumptions", "outcome", "position", "price", "source_timestamp", "quote_status"}
+    normalized: list[dict[str, Any]] = []
+    for observation in observations:
+        missing = sorted(field for field in required if observation.get(field) in (None, ""))
+        if missing:
+            raise QuoteLifecycleError(f"Provider observation is incomplete: {', '.join(missing)}.")
+        if observation.get("quote_status") != "active":
+            raise QuoteLifecycleError("Only explicitly active provider observations are supported for candidate revalidation.")
+        if observation.get("fee") not in (None, 0, "0", "0.00") or observation.get("fx") not in (None, "CAD"):
+            raise QuoteLifecycleError("Provider observations with fees or FX are unsupported and cannot be revalidated.")
+        accepted = dict(observation)
+        accepted["status"] = accepted.pop("quote_status")
+        normalized.append(accepted)
+    return ingest_market_observations(session, normalized, received_at=received_at, ttl_seconds=ttl_seconds)

@@ -12,7 +12,7 @@ from pydantic import BaseModel, Field
 from .domain import CalculationError, calculate_hedge
 from .fixtures import fixture_board
 from .opportunities import detect_two_way_opportunities
-from .persistence import Book, CanonicalEvent, Market, Outcome, PairLedgerCorrection, PairLedgerRecord, Quote, QuoteVersion, SavedCalculation, WatchlistEntry, create_schema, new_id, session
+from .persistence import Book, CanonicalEvent, Market, Outcome, PairLedgerCorrection, PairLedgerRecord, ProviderCapabilityEvidence, Quote, QuoteVersion, SavedCalculation, WatchlistEntry, create_schema, new_id, session
 from .provider import OddsApiAdapter
 from .quote_lifecycle import expire_current_quotes, ingest_market_observations, is_active
 
@@ -44,6 +44,7 @@ class LedgerRecordRequest(BaseModel):
     total_stake: str
     returned: str
     fees: str = "0"
+    provenance: dict | None = None
 
 
 class LedgerCorrectionRequest(BaseModel):
@@ -120,12 +121,40 @@ def capabilities() -> dict:
 @app.post("/v1/provider/refresh")
 def refresh_provider(request: ProviderRefreshRequest) -> dict:
     """Run one explicit selected-market refresh; fixture mode never polls providers."""
+    received = datetime.now(timezone.utc)
+    adapter = OddsApiAdapter()
+    status = adapter.status()
     try:
-        return OddsApiAdapter().fetch_selected_market(request.sport, request.market)
+        board = adapter.fetch_selected_market(request.sport, request.market)
     except RuntimeError as error:
+        record_capability_evidence(provider="the-odds-api", sport=request.sport, market=request.market, region=status.region, received=received, quota=None, outcome="deferred" if not status.configured else "rejected", failure=str(error), unknowns="No provider observation was requested or accepted; coverage, display rights, limits, and Quebec eligibility remain unknown.")
         raise HTTPException(status_code=409, detail=str(error)) from error
     except httpx.HTTPError as error:
+        record_capability_evidence(provider="the-odds-api", sport=request.sport, market=request.market, region=status.region, received=received, quota=None, outcome="failed", failure="Provider request failed", unknowns="No observation was accepted; source availability and coverage remain unknown.")
         raise HTTPException(status_code=502, detail="Provider request failed; fixture mode remains available.") from error
+    for game in board["games"]:
+        for quote in game["quotes"]:
+            record_capability_evidence(provider="the-odds-api", sport=request.sport, market=request.market, region=status.region, book=quote["book"], source_time=quote.get("source_time"), received=received, quota=board["credit_state"]["remaining"], outcome="observed", unknowns="Period, settlement assumptions, exact source status, limits, fees, FX, and Quebec eligibility were not supplied by this bounded board response.", details={"event_id": game["id"], "outcomes": game["outcomes"], "prices": quote["prices"]})
+    return board | {"observation_state": "provider-observed-not-revalidated", "revalidation_reason": "Exact period, settlement assumptions, and source-specific status are required before lifecycle ingestion."}
+
+
+def record_capability_evidence(*, provider: str, sport: str, market: str, region: str, received: datetime, quota: int | None, outcome: str, failure: str | None = None, unknowns: str = "", book: str | None = None, source_time: str | None = None, details: dict | None = None) -> None:
+    source = None
+    if source_time:
+        try:
+            source = datetime.fromisoformat(source_time.replace("Z", "+00:00"))
+        except ValueError:
+            pass
+    with session() as database:
+        database.add(ProviderCapabilityEvidence(id=new_id(), provider=provider, sport=sport, market=market, region=region, book=book, source_timestamp=source, received_timestamp=received, quota_remaining=quota, outcome=outcome, failure_reason=failure, unknowns=unknowns, details=json.dumps(details or {}, separators=(",", ":"))))
+        database.commit()
+
+
+@app.get("/v1/provider/evidence")
+def provider_evidence() -> list[dict]:
+    with session() as database:
+        rows = database.query(ProviderCapabilityEvidence).order_by(ProviderCapabilityEvidence.received_timestamp.desc()).all()
+        return [{"id": row.id, "provider": row.provider, "sport": row.sport, "market": row.market, "region": row.region, "book": row.book, "source_timestamp": row.source_timestamp.isoformat() if row.source_timestamp else None, "received_timestamp": row.received_timestamp.isoformat(), "quota_remaining": row.quota_remaining, "outcome": row.outcome, "failure_reason": row.failure_reason, "unknowns": row.unknowns, "details": json.loads(row.details)} for row in rows]
 
 
 @app.get("/v1/watchlist")
@@ -186,6 +215,25 @@ def list_ledger() -> list[dict]:
         return [ledger_projection(database, row) for row in rows]
 
 
+@app.get("/v1/ledger/summary")
+def ledger_summary() -> dict:
+    """Return research-ledger totals from integer minor units, never browser math."""
+    with session() as database:
+        records = [ledger_projection(database, row) for row in database.query(PairLedgerRecord).all()]
+    settled_stake = settled_net = open_stake = 0
+    for row in records:
+        stake = cents(row["total_stake"])
+        returned = cents(row["returned"])
+        fees = cents(row["fees"])
+        if row["status"] == "settled":
+            settled_stake += stake
+            settled_net += returned - stake - fees
+        elif row["status"] == "open":
+            open_stake += stake
+    roi_basis_points = (settled_net * 10000 // settled_stake) if settled_stake else 0
+    return {"settled_stake_minor": settled_stake, "realised_net_minor": settled_net, "open_stake_minor": open_stake, "settled_count": sum(row["status"] == "settled" for row in records), "roi_basis_points": roi_basis_points, "method": "effective projection only; open and void records are excluded from realised ROI"}
+
+
 @app.get("/v1/ledger/{record_id}/corrections")
 def list_ledger_corrections(record_id: str) -> list[dict]:
     with session() as database:
@@ -216,18 +264,46 @@ def ledger_projection(database, row: PairLedgerRecord) -> dict:
     returned = correction.returned_minor if correction else row.returned_minor
     fees = correction.fees_minor if correction else row.fees_minor
     original = {"status": row.status, "total_stake": f"{row.total_stake_minor / 100:.2f}", "returned": f"{row.returned_minor / 100:.2f}", "fees": f"{row.fees_minor / 100:.2f}", "created_at": row.created_at.isoformat()}
-    return {"id": row.id, "occurred_on": row.occurred_on, "event_name": row.event_name, "books": row.books, "status": status, "total_stake": f"{stake / 100:.2f}", "returned": f"{returned / 100:.2f}", "fees": f"{fees / 100:.2f}", "source": row.source, "original": original, "correction_count": database.query(PairLedgerCorrection).filter_by(record_id=row.id).count()}
+    return {"id": row.id, "occurred_on": row.occurred_on, "event_name": row.event_name, "books": row.books, "status": status, "total_stake": f"{stake / 100:.2f}", "returned": f"{returned / 100:.2f}", "fees": f"{fees / 100:.2f}", "source": row.source, "provenance": json.loads(row.provenance), "original": original, "correction_count": database.query(PairLedgerCorrection).filter_by(record_id=row.id).count()}
 
 
 @app.post("/v1/ledger", status_code=201)
 def create_ledger_record(request: LedgerRecordRequest) -> dict:
     stake, returned, fees = validate_ledger_money(request.status, request.total_stake, request.returned, request.fees)
-    row = PairLedgerRecord(id=new_id(), occurred_on=request.occurred_on, event_name=request.event_name, books=request.books, status=request.status, total_stake_minor=stake, returned_minor=returned, fees_minor=fees)
+    provenance = validate_ledger_provenance(request.provenance)
+    row = PairLedgerRecord(id=new_id(), occurred_on=request.occurred_on, event_name=request.event_name, books=request.books, status=request.status, total_stake_minor=stake, returned_minor=returned, fees_minor=fees, provenance=json.dumps(provenance, separators=(",", ":")))
     with session() as database:
         database.add(row)
         database.commit()
         database.refresh(row)
     return {"id": row.id}
+
+
+def validate_ledger_provenance(value: dict | None) -> dict:
+    if value is None:
+        return {"kind": "manual-source", "note": "Book labels are user-entered research context, not verified sportsbook execution data."}
+    kind = value.get("kind")
+    if kind == "manual-source":
+        return {"kind": "manual-source", "note": str(value.get("note") or "Manual research entry.")}
+    if kind != "sourced-pair":
+        raise HTTPException(status_code=422, detail="Ledger provenance must be manual-source or sourced-pair.")
+    legs = value.get("legs")
+    if not isinstance(legs, list) or len(legs) != 2:
+        raise HTTPException(status_code=422, detail="Sourced-pair provenance requires exactly two legs.")
+    normalized = []
+    for leg in legs:
+        required = ("book", "stake", "returned", "status", "settlement_context")
+        if not isinstance(leg, dict) or any(leg.get(field) in (None, "") for field in required):
+            raise HTTPException(status_code=422, detail="Each sourced leg requires book, stake, returned, status, and settlement context.")
+        if leg.get("quote_version_id") in (None, "") and leg.get("manual_source_marker") in (None, ""):
+            raise HTTPException(status_code=422, detail="Each sourced leg requires a quote version ID or explicit manual-source marker.")
+        try:
+            stake = cents(str(leg["stake"]))
+            returned = cents(str(leg["returned"]))
+        except Exception as error:
+            raise HTTPException(status_code=422, detail="Sourced leg amounts must be non-negative decimal strings.") from error
+        normalized.append({"book": str(leg["book"]), "quote_version_id": leg.get("quote_version_id"), "manual_source_marker": leg.get("manual_source_marker"), "stake_minor": stake, "returned_minor": returned, "status": str(leg["status"]), "settlement_context": str(leg["settlement_context"])})
+    return {"kind": "sourced-pair", "legs": normalized}
 
 
 @app.post("/v1/ledger/{record_id}/corrections", status_code=201)

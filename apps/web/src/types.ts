@@ -7,4 +7,5 @@ export type SavedScenario = { id: string; title: string; createdAt: string; resu
 export type PairRecord = { id: string; date: string; event: string; books: string; status: 'settled' | 'open' | 'void'; stake: number; returned: number; fee: number; correctionCount?: number; original?: LedgerSnapshot }
 export type LedgerSnapshot = { status: PairRecord['status']; total_stake: string; returned: string; fees: string; created_at: string }
 export type LedgerCorrection = { id: string; reason: string; status: PairRecord['status']; total_stake: string; returned: string; fees: string; created_at: string }
+export type LedgerSummary = { settled_stake_minor: number; realised_net_minor: number; open_stake_minor: number; settled_count: number; roi_basis_points: number; method: string }
 export type Opportunity = { event_id: string; event: string; market: string; outcomes: string[]; books: string[]; odds: number[]; minimum_profit: string; roi_percent: string; mode: 'indicative' | 'revalidated' }

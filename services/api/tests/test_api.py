@@ -1,7 +1,20 @@
 from fastapi.testclient import TestClient
+import pytest
+from sqlalchemy import create_engine
+from sqlalchemy.orm import sessionmaker
 
 from app.main import app
-from app.provider import normalise_odds_payload
+from app.persistence import Base
+from app.provider import normalise_odds_payload, persist_validated_provider_market
+from app.quote_lifecycle import QuoteLifecycleError
+
+
+@pytest.fixture
+def database():
+    engine = create_engine("sqlite://")
+    Base.metadata.create_all(engine)
+    with sessionmaker(engine)() as runtime:
+        yield runtime
 
 def test_fixture_odds_and_calculator_contracts() -> None:
     with TestClient(app) as client:
@@ -54,6 +67,18 @@ def test_manual_ledger_contract_persists_a_record() -> None:
         assert any(row["id"] == response.json()["id"] for row in records.json())
 
 
+def test_ledger_provenance_requires_complete_sourced_legs() -> None:
+    with TestClient(app) as runtime:
+        base = {"occurred_on": "2026-10-28", "event_name": "Provenance", "books": "A / B", "status": "settled", "total_stake": "100", "returned": "102"}
+        rejected = runtime.post("/v1/ledger", json=base | {"provenance": {"kind": "sourced-pair", "legs": [{"book": "A"}]}})
+        assert rejected.status_code == 422
+        accepted = runtime.post("/v1/ledger", json=base | {"provenance": {"kind": "sourced-pair", "legs": [{"book": "A", "quote_version_id": "quote-a", "stake": "50", "returned": "51", "status": "settled", "settlement_context": "full-game"}, {"book": "B", "manual_source_marker": "manual receipt", "stake": "50", "returned": "51", "status": "settled", "settlement_context": "full-game"}]}})
+        assert accepted.status_code == 201
+        saved = next(row for row in runtime.get("/v1/ledger").json() if row["id"] == accepted.json()["id"])
+        assert saved["provenance"]["kind"] == "sourced-pair"
+        assert saved["provenance"]["legs"][0]["stake_minor"] == 5000
+
+
 def test_saved_calculation_survives_a_new_app_client() -> None:
     payload = {"title": "Fixture hedge", "payload": {"odds": [-110, 115], "result": {"minimum_profit": "1.00"}}}
     with TestClient(app) as first:
@@ -88,6 +113,20 @@ def test_ledger_correction_rejects_an_invalid_open_projection() -> None:
         assert correction.json()["detail"] == "Open records must have zero returned amount and fees."
 
 
+def test_ledger_summary_uses_effective_projection_without_open_or_void_double_counting() -> None:
+    with TestClient(app) as runtime:
+        settled = runtime.post("/v1/ledger", json={"occurred_on": "2026-10-28", "event_name": "Summary settled", "books": "A / B", "status": "settled", "total_stake": "100", "returned": "110", "fees": "1"}).json()["id"]
+        runtime.post(f"/v1/ledger/{settled}/corrections", json={"reason": "Correct return", "status": "settled", "total_stake": "100", "returned": "108", "fees": "1"})
+        runtime.post("/v1/ledger", json={"occurred_on": "2026-10-28", "event_name": "Summary open", "books": "A / B", "status": "open", "total_stake": "50", "returned": "0", "fees": "0"})
+        runtime.post("/v1/ledger", json={"occurred_on": "2026-10-28", "event_name": "Summary void", "books": "A / B", "status": "void", "total_stake": "25", "returned": "25", "fees": "0"})
+        summary = runtime.get("/v1/ledger/summary")
+        assert summary.status_code == 200
+        totals = summary.json()
+        assert totals["settled_stake_minor"] >= 10000
+        assert totals["open_stake_minor"] >= 5000
+        assert totals["method"].startswith("effective projection")
+
+
 def test_watchlist_toggle_persists_and_removes() -> None:
     with TestClient(app) as runtime:
         first = runtime.post("/v1/watchlist", json={"event_id": "fixture-event"})
@@ -105,3 +144,26 @@ def test_provider_normaliser_excludes_incomplete_or_three_way_groups() -> None:
     assert board["games"][0]["market"] == "player_points"
     assert board["games"][0]["outcomes"] == ["Sample Player Over 20.5", "Sample Player Under 20.5"]
     assert [quote["book"] for quote in board["games"][0]["quotes"]] == ["Stake", "Betway"]
+
+
+def test_missing_key_creates_deferred_capability_evidence() -> None:
+    with TestClient(app) as runtime:
+        response = runtime.post("/v1/provider/refresh", json={"sport": "icehockey_nhl", "market": "h2h"})
+        assert response.status_code == 409
+        evidence = runtime.get("/v1/provider/evidence")
+        assert evidence.status_code == 200
+        assert any(row["outcome"] == "deferred" and row["sport"] == "icehockey_nhl" for row in evidence.json())
+
+
+def test_provider_lifecycle_contract_rejects_missing_period_and_unsupported_fx(database) -> None:
+    base = {"provider": "permitted-sample", "region": "ca", "book": "Stake", "event_id": "provider-sample", "sport": "icehockey_nhl", "league": "NHL", "away": "Away", "home": "Home", "market": "h2h", "period": "full_game", "settlement_assumptions": "regulation-included", "source_timestamp": "2026-10-28T12:00:00Z", "quote_status": "active", "fx": "CAD"}
+    first = base | {"outcome": "Away", "position": 0, "price": 110}
+    second = base | {"outcome": "Home", "position": 1, "price": -120}
+    versions = persist_validated_provider_market(database, [first, second], received_at="2026-10-28T12:00:01Z")
+    assert len(versions) == 2
+    missing_period = dict(first)
+    missing_period["period"] = ""
+    with pytest.raises(QuoteLifecycleError, match="period"):
+        persist_validated_provider_market(database, [missing_period, second], received_at="2026-10-28T12:00:01Z")
+    with pytest.raises(QuoteLifecycleError, match="fees or FX"):
+        persist_validated_provider_market(database, [first | {"fx": "USD"}, second | {"fx": "USD"}], received_at="2026-10-28T12:00:01Z")
