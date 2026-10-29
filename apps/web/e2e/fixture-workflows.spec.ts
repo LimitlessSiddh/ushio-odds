@@ -129,7 +129,9 @@ test('performance headline metrics use the server ledger summary', async ({ page
   await page.locator('.rail nav button').nth(3).click()
   await page.getByPlaceholder('Event / matchup').fill(eventName)
   await page.getByPlaceholder('Book A / Book B').fill('Fixture A / Fixture B')
+  const saved = page.waitForResponse(response => response.url().includes('/v1/ledger') && response.request().method() === 'POST' && response.status() === 201)
   await page.getByRole('button', { name: 'Save pair' }).click()
+  await saved
   const summary: { realised_net_minor: number; roi_basis_points: number; settled_count: number } = await (await request.get(`${apiBaseUrl}/v1/ledger/summary`)).json()
   await page.reload()
   await page.locator('.rail nav button').nth(3).click()
